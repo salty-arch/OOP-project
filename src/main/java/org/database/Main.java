@@ -31,6 +31,8 @@ public class Main {
                     break;
                 case 0:
                     break;
+                default:
+                    System.out.println("Invalid choice");
             }
         }
     }
