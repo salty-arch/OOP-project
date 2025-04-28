@@ -36,7 +36,7 @@ public class Client extends User {
         while (choice2 != 0) {
             choice2 = -1;
             System.out.println("1.User registration\n2.Change password\n3.Enter amount\n4.Set budget\n5.Print amount" +
-                    "\n6.Print budget\n0.Exit");
+                    "\n6.Print budget\n7.Print total income\n8.Print total expense\n0.Exit");
             choice2 = cin.nextInt();
 
             switch (choice2) {
@@ -57,6 +57,12 @@ public class Client extends User {
                     break;
                 case 6:
                     Printbudget();
+                    break;
+                case 7:
+                    PrintTotalIncome();
+                    break;
+                case 8:
+                    PrintTotalExpense();
                     break;
                 case 0:
                     System.out.println("Returning to main menu...");
@@ -97,6 +103,11 @@ public class Client extends User {
 
         System.out.println("Enter the amount you want to add:");
         double amount = cin.nextDouble();
+
+        if (amount <= 0) {
+            System.out.println("Amount must be positive. Please try again.");
+            return;
+        }
 
         String amount_type = "";
         boolean validinput = false;
@@ -166,7 +177,33 @@ public class Client extends User {
         }
     }
 
+    private double getTotalincome(){
+        String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'income'";
+        try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1,this.email);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching total income: " + e.getMessage());;
+        }
+        return 0.0;
+    }
 
+    private double getTotalexpense(){
+        String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'expense'";
+        try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1,this.email);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching total expense: " + e.getMessage());;
+        }
+        return 0.0;
+    }
 
     private void PrintAmount(){
         String sql = "SELECT * FROM amount WHERE user_email = ?";
@@ -194,7 +231,15 @@ public class Client extends User {
         }
     }
 
+    private void PrintTotalIncome(){
+        double totalincome = getTotalincome();
+        System.out.println("------------------------\nTotal income: " + totalincome + "PKR\n------------------------");
+    }
 
+    private void PrintTotalExpense(){
+        double totalexpense = getTotalexpense();
+        System.out.println("------------------------\nTotal income: " + totalexpense + "PKR\n------------------------");
+    }
 
     public void Printbudget(){
         String sql = "SELECT * FROM budget WHERE user_email = ?";
