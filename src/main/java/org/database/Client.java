@@ -1,7 +1,6 @@
 package org.database;
 
 import java.sql.*;
-import java.util.regex.*;
 import java.util.Scanner;
 
 public class Client extends User {
@@ -19,6 +18,10 @@ public class Client extends User {
         else {
             System.out.println("User verified successfully.");
         }
+    }
+
+    public Client(String email) {
+        super();
     }
 
     @Override
@@ -198,5 +201,16 @@ public class Client extends User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String changePasswordGUI() { return password;
+    }
+
+    public void amountGUI() {
+        amount();
+    }
+
+    public void printAmountGUI() {
+        PrintAmount();
     }
 }
