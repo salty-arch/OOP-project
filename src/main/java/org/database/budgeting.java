@@ -5,7 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class budgeting {
+public class budgeting //Class to insert budget to the table (handles the insertion of budget table)
+{
     public static Scanner cin = new Scanner(System.in);
 
     public static void bugeting(String email){

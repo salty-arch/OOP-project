@@ -48,7 +48,7 @@ public class ClientDashboardFrame extends JFrame {
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Programhelper.Register();
+                ProgramHelper.Register();
             }
         });
 
@@ -87,7 +87,7 @@ public class ClientDashboardFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Client client = new Client(email);
-                client.Printbudget();
+                client.PrintBudgetActivity();
             }
         });
 

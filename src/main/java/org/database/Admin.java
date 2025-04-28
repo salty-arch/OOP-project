@@ -8,7 +8,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Admin {
+public class Admin {    //didnt do stuff here yet
     public static Scanner cin = new Scanner(System.in);
     private String email;
     private String password;

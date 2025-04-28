@@ -46,7 +46,7 @@ public class LoginFrame extends JFrame {
                 String email = emailField.getText();
                 String password = new String(passwordField.getPassword());
 
-                if (Programhelper.VerifyUser(email, password)) {
+                if (ProgramHelper.VerifyUser(email, password)) {
                     JOptionPane.showMessageDialog(null, "Login successful!");
                     new ClientDashboardFrame(email);
                     dispose(); // close login window

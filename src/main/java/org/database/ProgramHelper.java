@@ -8,16 +8,18 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Programhelper {
+public class ProgramHelper  //A class which will contain methods which are used in general by the program.
+{
     private static final Scanner cin = new Scanner(System.in);
 
-    public static void Register(){
+    public static void Register(){  //method to enter a user to the users table
 
         System.out.println("Enter email you want to register with:");
         String Email = cin.next();
         cin.nextLine();
 
-        if (VerifyEmail(Email)){
+        if (VerifyEmail(Email)) //if email is verified using VerifyEmail method
+        {
 
             System.out.println("Enter the password u want to set:");
             String Password = cin.next();
@@ -40,12 +42,13 @@ public class Programhelper {
             }
         }
 
-        else{
+        else{   //if email is not verified by VerifyEmail method
             System.out.println("Invalid email format.");
         }
     }
 
-    public static boolean VerifyEmail(String Email){
+    public static boolean VerifyEmail(String Email)     //a method which sets a pattern for valid email address
+    {
         String regex = "^[\\w]+@[\\w]+\\.(com|edu|org|pk)$";
         Pattern pattern = Pattern.compile(regex);
         Matcher match = pattern.matcher(Email);
@@ -68,4 +71,5 @@ public class Programhelper {
         }
         return user_exists;
     }
+
 }

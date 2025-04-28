@@ -3,34 +3,37 @@ package org.database;
 import java.sql.*;
 import java.util.Scanner;
 
-public class Client extends User {
+public class Client extends User    //inheritance
+{
     private static final Scanner cin = new Scanner(System.in);
     private String role = "Client";
 
     Client(){
-        String[] account = get_Account();
-        this.email = account[0];
-        this.password = account[1];
-        if (!Programhelper.VerifyUser(this.email,this.password)) {
+        String[] account = get_Account();   //uses the get_Account method from User class
+        this.email = account[0];    //email initialization
+        this.password = account[1]; //password initialization
+
+        if (!ProgramHelper.VerifyUser(this.email,this.password))    //uses VerifyUser method from inherited class(user)
+        {
             System.out.println("Invalid Email or Password.");
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException("Invalid credentials");  //to stop construction of an object if invalid credentials are given
         }
-        else {
+        else {  //if user verified then approves constructor creation
             System.out.println("User verified successfully.");
         }
     }
 
     public Client(String email) {
         super();
-    }
+    }   //idek
 
-    @Override
+    @Override   //overrides get_Account method from user
     public String[] get_Account(){
         System.out.println("Client sign in.");
         return super.get_Account();
     }
 
-    public void menu(){
+    public void menu(){     //menu interface for client
         int choice2 = -1;
 
         while (choice2 != 0) {
@@ -41,7 +44,7 @@ public class Client extends User {
 
             switch (choice2) {
                 case 1:
-                    Programhelper.Register();
+                    ProgramHelper.Register();
                     break;
                 case 2:
                     Change_pass();
@@ -53,10 +56,10 @@ public class Client extends User {
                     budgeting.bugeting(this.email);
                     break;
                 case 5:
-                    PrintAmount();
+                    PrintAmountActivity();
                     break;
                 case 6:
-                    Printbudget();
+                    PrintBudgetActivity();
                     break;
                 case 7:
                     PrintTotalIncome();
@@ -73,26 +76,28 @@ public class Client extends User {
 
 
 
-    private void Change_pass(){
-
+    private void Change_pass(){     //method to change password
+        //havent added a option to enter old password before opting for new password yet, will do soon.
         System.out.println("Enter new password:");
         String new_pass = cin.next();
 
         String sql = "UPDATE users SET password = ? WHERE email = ?";
-        try (Connection conn = Databasehelper.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)){
-
+        try (Connection conn = Databasehelper.connect();    //connects to the database
+             PreparedStatement pstmt = conn.prepareStatement(sql))      //makes a preparedstatement to execute the update in sql
+        {
             pstmt.setString(1,new_pass);
             pstmt.setString(2,this.email);
             int updatedRows = pstmt.executeUpdate();
 
-            if (updatedRows > 0) {
+            if (updatedRows > 0)    //if updatedrows == 0 this means password change failed since after the update.
+                                    // there are no rows for the given email
+            {
                 System.out.println("Password changed successfully!");
             } else {
                 System.out.println("Password change failed.");
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException e) {      //catching any error occured while executing the update
             System.out.println("Error occured: " + e.getMessage());
         }
     }
@@ -101,14 +106,15 @@ public class Client extends User {
 
     private void amount() {
 
-        System.out.println("Enter the amount you want to add:");
+        System.out.println("Enter the amount you want to add:");   //asks amount
         double amount = cin.nextDouble();
 
-        if (amount <= 0) {
+        if (amount <= 0) {      //makes sure amount is positive
             System.out.println("Amount must be positive. Please try again.");
             return;
         }
 
+        //variables declaration and initialization
         String amount_type = "";
         boolean validinput = false;
         boolean updatedBudget = true;
@@ -118,12 +124,16 @@ public class Client extends User {
             while (!validinput) {
                 System.out.println("Enter amount type (Income,expense):");
                 amount_type = cin.next();
-                cin.nextLine();
-                if (!amount_type.equalsIgnoreCase("Income") && !amount_type.equalsIgnoreCase("expense")) {
+                cin.nextLine(); //absorbs the next empty line
+
+                if (!amount_type.equalsIgnoreCase("Income") && !amount_type.equalsIgnoreCase("expense"))
+                {   //makes sure amount type is either income or expense if not then opts the user to enter again.
                     System.out.println("Enter valid amount type.");
-                } else if (amount_type.equalsIgnoreCase("expense")) {
+                }
+                else if (amount_type.equalsIgnoreCase("expense"))
+                {   //if amount type is expense
                     System.out.println("Enter the category for your expense:");
-                    String category = cin.nextLine();
+                    String category = cin.nextLine();   //prompts for the category from the budget table for expense
 
                     String sql = "SELECT remaining_budget FROM budget WHERE user_email = ? AND budget_category = ?";
 
@@ -132,12 +142,14 @@ public class Client extends User {
                         pstmt.setString(2, category);
                         ResultSet rs = pstmt.executeQuery();
 
-                        if (rs.next()) {
-                            double remaining = rs.getDouble("remaining_budget");
-                            if (amount > remaining) {
+                        if (rs.next()) //if rs.next() == true it means there is a matching budget for the given category
+                        {
+                            double remaining = rs.getDouble("remaining_budget");    //gets remaining budget
+                            if (amount > remaining) {   //makes sure amount is less than budget
                                 System.out.println("Expense amount exceeds remaining budget. Cannot proceed");
                                 updatedBudget = false;
-                            } else {
+                            }
+                            else {  //if amount is less than budget it updates budget by subtracting amount from the remaining_budget
                                 String update = "UPDATE budget SET remaining_budget = remaining_budget - ? WHERE user_email = ? AND budget_category = ?";
                                 try (PreparedStatement stmtupdate = conn.prepareStatement(update)) {
                                     stmtupdate.setDouble(1, amount);
@@ -146,19 +158,21 @@ public class Client extends User {
                                     stmtupdate.executeUpdate();
                                 }
                             }
-                        } else {
+                        }
+                        else {  //if rs.next() == false it means no budget row found with the given category
                             System.out.println("No matching budget found for the given category.");
                             updatedBudget = false;
                         }
                     }
 
                     validinput = true;
-                } else if (amount_type.equalsIgnoreCase("income")) {
+                } else if (amount_type.equalsIgnoreCase("income")) //if amount type is income
+                {
                     validinput = true;
                 }
             }
 
-            if (updatedBudget) {
+            if (updatedBudget) {    //if updateBudget == true it inserts the amount to the table (amount)
                 String sql = "INSERT INTO amount (user_email,type,amount) VALUES (?,?,?)";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -177,7 +191,7 @@ public class Client extends User {
         }
     }
 
-    private double getTotalincome(){
+    private double getTotalincome(){    //method to get total income
         String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'income'";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1,this.email);
@@ -191,7 +205,7 @@ public class Client extends User {
         return 0.0;
     }
 
-    private double getTotalexpense(){
+    private double getTotalexpense(){   //method to get total expense
         String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'expense'";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1,this.email);
@@ -205,7 +219,7 @@ public class Client extends User {
         return 0.0;
     }
 
-    private void PrintAmount(){
+    private void PrintAmountActivity(){     //prints the amount activity of client
         String sql = "SELECT * FROM amount WHERE user_email = ?";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
 
@@ -231,17 +245,17 @@ public class Client extends User {
         }
     }
 
-    private void PrintTotalIncome(){
+    private void PrintTotalIncome(){    //prints total income
         double totalincome = getTotalincome();
         System.out.println("------------------------\nTotal income: " + totalincome + "PKR\n------------------------");
     }
 
-    private void PrintTotalExpense(){
+    private void PrintTotalExpense(){   //method to print total expense
         double totalexpense = getTotalexpense();
         System.out.println("------------------------\nTotal income: " + totalexpense + "PKR\n------------------------");
     }
 
-    public void Printbudget(){
+    public void PrintBudgetActivity(){   //method to print budget activity
         String sql = "SELECT * FROM budget WHERE user_email = ?";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
 
@@ -267,6 +281,7 @@ public class Client extends User {
         }
     }
 
+    //getters
     public String getRole() {
         return role;
     }
@@ -279,6 +294,7 @@ public class Client extends User {
         return password;
     }
 
+    //for GUI
     public String changePasswordGUI() { return password;
     }
 
@@ -287,6 +303,6 @@ public class Client extends User {
     }
 
     public void printAmountGUI() {
-        PrintAmount();
+        PrintAmountActivity();
     }
 }
