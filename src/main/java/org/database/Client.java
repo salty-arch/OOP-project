@@ -65,6 +65,8 @@ public class Client extends User {
         }
     }
 
+
+
     private void Change_pass(){
 
         System.out.println("Enter new password:");
@@ -89,52 +91,81 @@ public class Client extends User {
         }
     }
 
-    private void amount(){
+
+
+    private void amount() {
 
         System.out.println("Enter the amount you want to add:");
         double amount = cin.nextDouble();
 
-        String amount_type;
-        while(true) {
-            System.out.println("Enter amount type (Income,expense):");
-            amount_type = cin.next();
-            cin.nextLine();
-            if (!amount_type.equalsIgnoreCase("Income") && !amount_type.equalsIgnoreCase("expense")) {
-                System.out.println("Enter valid amount type.");
-            }
-            else if(amount_type.equalsIgnoreCase("expense")){
-                System.out.println("Enter the category for your expense:");
-                String category = cin.nextLine();
+        String amount_type = "";
+        boolean validinput = false;
+        boolean updatedBudget = true;
 
-                String updatesql = "UPDATE budget SET remaining_budget = remaining_budget - ? WHERE user_email = ? AND budget_category = ?";
-                try (Connection conn = Databasehelper.connect(); PreparedStatement stmt = conn.prepareStatement(updatesql)) {
-                    stmt.setDouble(1, amount);
-                    stmt.setString(2, this.email);
-                    stmt.setString(3, category);
-                    int rows = stmt.executeUpdate();
-                    if (rows == 0) {
-                        System.out.println("No matching budget found for the given category.");
+
+        try(Connection conn = Databasehelper.connect()) {
+            while (!validinput) {
+                System.out.println("Enter amount type (Income,expense):");
+                amount_type = cin.next();
+                cin.nextLine();
+                if (!amount_type.equalsIgnoreCase("Income") && !amount_type.equalsIgnoreCase("expense")) {
+                    System.out.println("Enter valid amount type.");
+                } else if (amount_type.equalsIgnoreCase("expense")) {
+                    System.out.println("Enter the category for your expense:");
+                    String category = cin.nextLine();
+
+                    String sql = "SELECT remaining_budget FROM budget WHERE user_email = ? AND budget_category = ?";
+
+                    try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                        pstmt.setString(1, this.email);
+                        pstmt.setString(2, category);
+                        ResultSet rs = pstmt.executeQuery();
+
+                        if (rs.next()) {
+                            double remaining = rs.getDouble("remaining_budget");
+                            if (amount > remaining) {
+                                System.out.println("Expense amount exceeds remaining budget. Cannot proceed");
+                                updatedBudget = false;
+                            } else {
+                                String update = "UPDATE budget SET remaining_budget = remaining_budget - ? WHERE user_email = ? AND budget_category = ?";
+                                try (PreparedStatement stmtupdate = conn.prepareStatement(update)) {
+                                    stmtupdate.setDouble(1, amount);
+                                    stmtupdate.setString(2, this.email);
+                                    stmtupdate.setString(3, category);
+                                    stmtupdate.executeUpdate();
+                                }
+                            }
+                        } else {
+                            System.out.println("No matching budget found for the given category.");
+                            updatedBudget = false;
+                        }
                     }
-                } catch (SQLException e) {
-                    System.out.println("Updating remaining budget failed: " + e.getMessage());
+
+                    validinput = true;
+                } else if (amount_type.equalsIgnoreCase("income")) {
+                    validinput = true;
                 }
-                break;
             }
-        }
 
-        String sql = "INSERT INTO amount (user_email,type,amount) VALUES (?,?,?)";
-        try(Connection conn = Databasehelper.connect(); PreparedStatement stmt = conn.prepareStatement(sql)){
+            if (updatedBudget) {
+                String sql = "INSERT INTO amount (user_email,type,amount) VALUES (?,?,?)";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1,this.email);
-            stmt.setString(2,amount_type);
-            stmt.setDouble(3,amount);
-            stmt.executeUpdate();
+                    stmt.setString(1, this.email);
+                    stmt.setString(2, amount_type);
+                    stmt.setDouble(3, amount);
+                    stmt.executeUpdate();
 
+                } catch (SQLException e) {
+                    System.out.println("Inserting amount failed: " + e.getMessage());
+                }
+                System.out.println("Amount entered!");
+            }
         } catch (SQLException e) {
-            System.out.println("Inserting amount failed: " + e.getMessage());
+            System.out.println("Error occurred: " + e.getMessage());
         }
-        System.out.println("Amount entered!");
     }
+
 
 
     private void PrintAmount(){

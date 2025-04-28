@@ -7,7 +7,6 @@ import java.util.Scanner;
 public class Main {
     public static Scanner cin = new Scanner(System.in);
     public static void main(String[] args) {
-        Databasehelper.create_table();
         int choice = -1, choice2 = -1;
         Admin admin = new Admin();
         while (choice != 0){
