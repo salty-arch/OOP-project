@@ -12,7 +12,7 @@ public abstract class User {    //abstract class to group common methods and var
     protected String email;
     protected String password;
 
-    //common method to be used by client and admin for sign in
+    //common method to be used by client and admin for sign-in
     String[] get_Account(){
         System.out.println("Enter your email:");
         this.email = scan.next();
@@ -26,10 +26,6 @@ public abstract class User {    //abstract class to group common methods and var
     }
 
     //Getters
-    protected String[] getAccount() {
-        return null;
-    }
-
     public String getEmail() {
         return email;
     }

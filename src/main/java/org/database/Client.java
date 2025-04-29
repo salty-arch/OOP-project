@@ -1,5 +1,6 @@
 package org.database;
 
+import javax.swing.*;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -23,9 +24,9 @@ public class Client extends User    //inheritance
         }
     }
 
-    public Client(String email) {
-        super();
-    }   //idek
+    public Client(String email, boolean fromGUI) {
+        this.email = email;
+    }
 
     @Override   //overrides get_Account method from user
     public String[] get_Account(){
@@ -295,7 +296,28 @@ public class Client extends User    //inheritance
     }
 
     //for GUI
-    public String changePasswordGUI() { return password;
+    public void changePasswordGUI() {
+        String new_pass = JOptionPane.showInputDialog(null, "Enter new password:");
+
+        if (new_pass != null && !new_pass.isEmpty()) {
+            String sql = "UPDATE users SET password = ? WHERE email = ?";
+            try (Connection conn = Databasehelper.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, new_pass);
+                pstmt.setString(2, this.email);
+                int updatedRows = pstmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    JOptionPane.showMessageDialog(null, "Password changed successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Password change failed.");
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error occurred: " + e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Password change cancelled or invalid input.");
+        }
     }
 
     public void amountGUI() {

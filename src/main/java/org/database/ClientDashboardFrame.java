@@ -48,14 +48,14 @@ public class ClientDashboardFrame extends JFrame {
         registerButton.addActionListener(new ActionListener() { // What happens when you click it
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProgramHelper.Register(); // Calls the register
+                new clientRegisterFrame(); // <-- CALLS THE GUI instead of console
             }
         });
 
         changePasswordButton.addActionListener(new ActionListener() { // Click action
             @Override
             public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email); // Makes a client object
+                Client client = new Client(email, true); // Use the new constructor
                 client.changePasswordGUI(); // Shows the password change screen
             }
         });
@@ -63,7 +63,7 @@ public class ClientDashboardFrame extends JFrame {
         enterAmountButton.addActionListener(new ActionListener() { // On button click
             @Override
             public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email); // New client object
+                Client client = new Client(email, true); // New client object
                 client.amountGUI(); // Shows the amount entry thingy
             }
         });
@@ -78,7 +78,7 @@ public class ClientDashboardFrame extends JFrame {
         printAmountButton.addActionListener(new ActionListener() { // Click this one
             @Override
             public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email); // Client object again
+                Client client = new Client(email, true); // Client object again
                 client.printAmountGUI(); // Shows the print amounts UI
             }
         });
@@ -86,7 +86,7 @@ public class ClientDashboardFrame extends JFrame {
         printBudgetButton.addActionListener(new ActionListener() { // Hit this button
             @Override
             public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email); // Make a client
+                Client client = new Client(email, true); // Make a client
                 client.PrintBudgetActivity(); // Shows the print budget screen
             }
         });
