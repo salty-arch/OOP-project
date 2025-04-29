@@ -248,12 +248,12 @@ public class Client extends User    //inheritance
 
     private void PrintTotalIncome(){    //prints total income
         double totalincome = getTotalincome();
-        System.out.println("------------------------\nTotal income: " + totalincome + "PKR\n------------------------");
+        System.out.println("------------------------\nTotal income: " + String.format("%.2f", totalincome) + "PKR\n------------------------");
     }
 
     private void PrintTotalExpense(){   //method to print total expense
         double totalexpense = getTotalexpense();
-        System.out.println("------------------------\nTotal income: " + totalexpense + "PKR\n------------------------");
+        System.out.println("------------------------\nTotal expense: " + String.format("%.2f", totalexpense) + "PKR\n------------------------");
     }
 
     public void PrintBudgetActivity(){   //method to print budget activity
