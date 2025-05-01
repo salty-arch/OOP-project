@@ -9,6 +9,8 @@ public class Client extends User    //inheritance
     private static final Scanner cin = new Scanner(System.in);
     private String role = "Client";
 
+    private FinancialGoals goals;
+
     Client(){
         String[] account = get_Account();   //uses the get_Account method from User class
         this.email = account[0];    //email initialization
@@ -22,10 +24,14 @@ public class Client extends User    //inheritance
         else {  //if user verified then approves constructor creation
             System.out.println("User verified successfully.");
         }
+
+        goals = new FinancialGoals(email);
+        goals.Goalcompletion();
     }
 
     public Client(String email, boolean fromGUI) {
         this.email = email;
+        goals = new FinancialGoals(email);
     }
 
     @Override   //overrides get_Account method from user
@@ -35,15 +41,17 @@ public class Client extends User    //inheritance
     }
 
     public void menu(){     //menu interface for client
+        int choice1 = -1;
         int choice2 = -1;
+        int choice3 = -1;
 
-        while (choice2 != 0) {
-            choice2 = -1;
+        while (choice1 != 0) {
+            choice1 = -1;
             System.out.println("1.User registration\n2.Change password\n3.Enter amount\n4.Set budget\n5.Print amount" +
-                    "\n6.Print budget\n7.Print total income\n8.Print total expense\n0.Exit");
-            choice2 = cin.nextInt();
+                    "\n6.Print budget\n7.Print total income\n8.Print total expense\n9.Financial options\n0.Exit");
+            choice1 = cin.nextInt();
 
-            switch (choice2) {
+            switch (choice1) {
                 case 1:
                     ProgramHelper.Register();
                     break;
@@ -67,6 +75,24 @@ public class Client extends User    //inheritance
                     break;
                 case 8:
                     PrintTotalExpense();
+                    break;
+                case 9:
+                    while(choice2 != 0){
+                        System.out.println("1.Set Financial goal\n2.Check goals deadline\n0.Return");
+                        choice2 = cin.nextInt();
+
+                        switch(choice2){
+                            case 1:
+                                goals.SetGoal();
+                                break;
+                            case 2:
+                                goals.checkDeadline();
+                                break;
+                            case 0:
+                                System.out.println("Returning...");
+                                break;
+                        }
+                    }
                     break;
                 case 0:
                     System.out.println("Returning to main menu...");
@@ -192,10 +218,10 @@ public class Client extends User    //inheritance
         }
     }
 
-    private double getTotalincome(){    //method to get total income
+    public static double getTotalincome(String email){    //method to get total income
         String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'income'";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
-            pstmt.setString(1,this.email);
+            pstmt.setString(1,email);
             ResultSet rs = pstmt.executeQuery();
             if(rs.next()){
                 return rs.getDouble(1);
@@ -206,10 +232,10 @@ public class Client extends User    //inheritance
         return 0.0;
     }
 
-    private double getTotalexpense(){   //method to get total expense
+    public static double getTotalexpense(String email){   //method to get total expense
         String sql = "SELECT SUM(amount) FROM amount WHERE user_email = ? AND type = 'expense'";
         try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
-            pstmt.setString(1,this.email);
+            pstmt.setString(1,email);
             ResultSet rs = pstmt.executeQuery();
             if(rs.next()){
                 return rs.getDouble(1);
@@ -247,12 +273,12 @@ public class Client extends User    //inheritance
     }
 
     private void PrintTotalIncome(){    //prints total income
-        double totalincome = getTotalincome();
+        double totalincome = getTotalincome(this.email);
         System.out.println("------------------------\nTotal income: " + String.format("%.2f", totalincome) + "PKR\n------------------------");
     }
 
     private void PrintTotalExpense(){   //method to print total expense
-        double totalexpense = getTotalexpense();
+        double totalexpense = getTotalexpense(this.email);
         System.out.println("------------------------\nTotal expense: " + String.format("%.2f", totalexpense) + "PKR\n------------------------");
     }
 

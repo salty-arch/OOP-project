@@ -44,11 +44,20 @@ public class Databasehelper {   //class for database creation and modification
                 "amount REAL, " +
                 "FOREIGN KEY (user_email) REFERENCES users(email)" +
                 ");";
+        //SQL statement to create the "Financial goals" table for managing goals
+        String table_4 = "CREATE TABLE IF NOT EXISTS goals(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "user_email TEXT NOT NULL, " +
+                "goal_type TEXT NOT NULL CHECK (goal_type IN ('saving', 'limit spending'))," +
+                "category TEXT," +
+                "amount REAL NOT NULL," +
+                "deadline TEXT NOT NULL," +
+                "status  TEXT DEFAULT 'active');";
 
         // Attempt to create the 'users' table
         try(Statement stmt = conn.createStatement()){
-            stmt.execute(table);
-            System.out.println("Table created!");
+            stmt.execute(table_4);
+            System.out.println("Table 4 created!");
         } catch (SQLException e) {
             System.out.println("Creating table failed: " + e.getMessage());
         }

@@ -18,13 +18,14 @@ public class budgeting //Class to insert budget to the table (handles the insert
         double budget_limit = cin.nextDouble();
         cin.nextLine();
 
-        String sql = "INSERT INTO budget (user_email,budget_category,amount) VALUES (?,?,?)";
+        String sql = "INSERT INTO budget (user_email,budget_category,amount,remaining_budget) VALUES (?,?,?,?)";
 
         try(Connection conn = Databasehelper.connect(); PreparedStatement stmt = conn.prepareStatement(sql)){
 
             stmt.setString(1,email);
             stmt.setString(2,category);
             stmt.setDouble(3,budget_limit);
+            stmt.setDouble(4,budget_limit);
             stmt.executeUpdate();
 
         } catch (SQLException e) {
