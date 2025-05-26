@@ -25,6 +25,7 @@ public abstract class User {    //abstract class to group common methods and var
         return new String[]{email,password};
     }
 
+    void menu(){}
     //Getters
     public String getEmail() {
         return email;

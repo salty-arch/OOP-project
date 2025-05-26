@@ -40,45 +40,57 @@ public class Client extends User    //inheritance
         return super.get_Account();
     }
 
-    public void menu(){     //menu interface for client
+    @Override
+    void menu(){     //menu interface for client
         int choice1 = -1;
         int choice2 = -1;
         int choice3 = -1;
+        int choice4 = -1;
 
         while (choice1 != 0) {
             choice1 = -1;
-            System.out.println("1.User registration\n2.Change password\n3.Enter amount\n4.Set budget\n5.Print amount" +
-                    "\n6.Print budget\n7.Print total income\n8.Print total expense\n9.Financial options\n0.Exit");
+            System.out.println("1.Change password\n2.Enter amount\n3.Set budget\n4.View your activities" +
+                    "\n5.Financial goals options\n0.Exit");
             choice1 = cin.nextInt();
 
             switch (choice1) {
                 case 1:
-                    ProgramHelper.Register();
-                    break;
-                case 2:
                     Change_pass();
                     break;
-                case 3:
+                case 2:
                     amount();
                     break;
-                case 4:
+                case 3:
                     budgeting.bugeting(this.email);
                     break;
+                case 4:
+                    while(choice4 != 0){
+                        System.out.println("1.Inserting amount activity\n2.Setting budget activity" +
+                                "\n3.Total income\n4.Total expense\n0.Return to client menu");
+                        choice4 = cin.nextInt();
+                        switch (choice4){
+                            case 1:
+                                PrintAmountActivity();
+                                break;
+                            case 2:
+                                PrintBudgetActivity();
+                                break;
+                            case 3:
+                                PrintTotalIncome();
+                                break;
+                            case 4:
+                                PrintTotalExpense();
+                                break;
+                            case 0:
+                                System.out.println("Returning...");
+                                break;
+                            default:
+                                System.out.println("Invalid choice.");
+                        }
+                    }
                 case 5:
-                    PrintAmountActivity();
-                    break;
-                case 6:
-                    PrintBudgetActivity();
-                    break;
-                case 7:
-                    PrintTotalIncome();
-                    break;
-                case 8:
-                    PrintTotalExpense();
-                    break;
-                case 9:
                     while(choice2 != 0){
-                        System.out.println("1.Set Financial goal\n2.Check goals deadline\n0.Return");
+                        System.out.println("1.Set Financial goal\n2.Check deadline\n3.Check goals\n0.Return");
                         choice2 = cin.nextInt();
 
                         switch(choice2){
@@ -88,6 +100,28 @@ public class Client extends User    //inheritance
                             case 2:
                                 goals.checkDeadline();
                                 break;
+                            case 3:
+                                while(choice3 != 0){
+                                    System.out.println("1.View completed goals\n2.View active goals\n3.View missed goals" +
+                                            "\n0.Return to client menu");
+                                    choice3 = cin.nextInt();
+                                    switch (choice3){
+                                        case 1:
+                                            goals.viewgoalsbyStatus("completed");
+                                            break;
+                                        case 2:
+                                            goals.viewgoalsbyStatus("active");
+                                            break;
+                                        case 3:
+                                            goals.viewgoalsbyStatus("missed");
+                                            break;
+                                        case 0:
+                                            System.out.println("Returning...");
+                                            break;
+                                        default:
+                                            System.out.println("Invalid choice");
+                                    }
+                                }
                             case 0:
                                 System.out.println("Returning...");
                                 break;
@@ -266,6 +300,7 @@ public class Client extends User    //inheritance
             if(!Data){
                 System.out.println("No transactions found.");
             }
+            System.out.println("----------------------------");
 
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e.getMessage());
@@ -302,6 +337,7 @@ public class Client extends User    //inheritance
             if(!Data){
                 System.out.println("No transactions found.");
             }
+            System.out.println("----------------------------");
 
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e.getMessage());

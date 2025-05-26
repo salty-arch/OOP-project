@@ -12,7 +12,6 @@ public class Main {
         //Initializing choices variable
         int choice = -1, choice2 = -1;
 
-        Admin admin = new Admin();
         while (choice != 0){
             System.out.println("1.Client\n2.Admin\n0.Exit");
             choice = cin.nextInt();
@@ -34,8 +33,19 @@ public class Main {
                     break;
                 case 2:
                     //yet to work on admin
-                    System.out.println("Haven't started yet");
-                    break;
+
+                    Admin admin = null;
+                    try {
+                        //constructing user
+                        admin = new Admin();
+                    }catch(IllegalArgumentException e){
+                        System.out.println("Returning to main menu...");
+                    }
+
+                    //if constructor is implied smoothly then client menu is given
+                    if(admin != null){
+                        admin.menu();
+                    }
                 case 0:
                     //exit
                     break;
