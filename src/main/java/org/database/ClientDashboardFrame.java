@@ -108,8 +108,8 @@ public class ClientDashboardFrame extends JFrame {
 
         JButton viewGoalsBtn = createCardButton("View Goals");
         viewGoalsBtn.addActionListener(e -> {
-            FinancialGoalsFrame frame = new FinancialGoalsFrame(email);
-            frame.showGoalForm("food"); // Make sure this method exists in your FinancialGoalsFrame
+            FinancialGoalsFrame goalsFrame = new FinancialGoalsFrame(email);
+            goalsFrame.setVisible(true); // Make sure this method exists in your FinancialGoalsFrame
         });
 
 
