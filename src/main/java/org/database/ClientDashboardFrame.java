@@ -1,104 +1,303 @@
 package org.database;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 
 public class ClientDashboardFrame extends JFrame {
+    private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
+    private static final Color BACKGROUND_COLOR = new Color(240, 245, 249);
+    private static final Color CARD_COLOR = new Color(255, 255, 255);
 
-    private String email; // Gotta keep track of who logged in
+    private final String email;
 
     public ClientDashboardFrame(String email) {
         this.email = email;
 
-        setTitle("Client Dashboard"); // Window title
-        setSize(400, 400); // Window size
-        setDefaultCloseOperation(EXIT_ON_CLOSE); // to kill app on close
-        setLocationRelativeTo(null); // Puts window in the middle
-        setLayout(null); // no layout manager (doing it manually)
+        setTitle("Client Dashboard");
+        setSize(800, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setUndecorated(true);
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
 
-        JButton registerButton = new JButton("Register User"); // Creating button
-        registerButton.setBounds(100, 30, 200, 30); // Button location and size
-        add(registerButton); // Puts the button on the screen
-
-        JButton changePasswordButton = new JButton("Change Password"); // Another button
-        changePasswordButton.setBounds(100, 70, 200, 30); // Its spot and size
-        add(changePasswordButton); // On the screen it goes
-
-        JButton enterAmountButton = new JButton("Enter Amount"); // Button
-        enterAmountButton.setBounds(100, 110, 200, 30); // Location and dimensions
-        add(enterAmountButton); // Adding it
-
-        JButton setBudgetButton = new JButton("Set Budget"); // Another button
-        setBudgetButton.setBounds(100, 150, 200, 30); // Where it sits
-        add(setBudgetButton); // Putting it there
-
-        JButton printAmountButton = new JButton("Print Amounts"); // Button
-        printAmountButton.setBounds(100, 190, 200, 30); // Its place
-        add(printAmountButton); // Adding it in
-
-        JButton printBudgetButton = new JButton("Print Budgets"); // One more button
-        printBudgetButton.setBounds(100, 230, 200, 30); // Where it's located
-        add(printBudgetButton); // Putting it on the frame
-
-        JButton logoutButton = new JButton("Logout"); // Last button for now
-        logoutButton.setBounds(100, 270, 200, 30); // Its spot
-        add(logoutButton); // Adding it to the UI
-
-        registerButton.addActionListener(new ActionListener() { // What happens when you click it
+        JPanel mainPanel = new JPanel() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                new clientRegisterFrame(); // <-- CALLS THE GUI instead of console
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(BACKGROUND_COLOR);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
             }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Header Panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+
+        JLabel titleLabel = new JLabel("Client Dashboard", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(PRIMARY_COLOR);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+
+        JButton closeButton = createIconButton("X");
+        closeButton.addActionListener(e -> System.exit(0));
+        headerPanel.add(closeButton, BorderLayout.EAST);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+
+
+        // Content Panel
+        JPanel contentPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        // Card 1: Transactions
+        JPanel transactionsCard = createDashboardCard("Transactions", "Enter and view your financial transactions");
+        JButton enterAmountBtn = createCardButton("Enter Amount");
+        enterAmountBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.amountGUI();
         });
 
-        changePasswordButton.addActionListener(new ActionListener() { // Click action
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email, true); // Use the new constructor
-                client.changePasswordGUI(); // Shows the password change screen
-            }
+        JButton viewTransactionsBtn = createCardButton("View Transactions");
+        viewTransactionsBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.printAmountGUI();
         });
 
-        enterAmountButton.addActionListener(new ActionListener() { // On button click
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email, true); // New client object
-                client.amountGUI(); // Shows the amount entry thingy
-            }
+        transactionsCard.add(enterAmountBtn);
+        transactionsCard.add(viewTransactionsBtn);
+        contentPanel.add(transactionsCard);
+
+        // Card 2: Budgeting
+        JPanel budgetingCard = createDashboardCard("Budgeting", "Manage your budgets and expenses");
+        JButton setBudgetBtn = createCardButton("Set Budget");
+        setBudgetBtn.addActionListener(e ->{
+            BudgetManagementFrame frame = new BudgetManagementFrame(email);
+            frame.setVisible(true);
         });
 
-        setBudgetButton.addActionListener(new ActionListener() { // When you press it
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                budgeting.bugeting(email); // Does the budgeting stuff
-            }
+        JButton viewBudgetsBtn = createCardButton("View Budgets");
+        viewBudgetsBtn.addActionListener(e -> {
+            budgeting budgeting = new budgeting();
+            budgeting.viewBudgetsGUI();
         });
 
-        printAmountButton.addActionListener(new ActionListener() { // Click this one
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email, true); // Client object again
-                client.printAmountGUI(); // Shows the print amounts UI
-            }
+
+        budgetingCard.add(setBudgetBtn);
+        budgetingCard.add(viewBudgetsBtn);
+        contentPanel.add(budgetingCard);
+
+        // Card 3: Financial Goals
+        JPanel goalsCard = createDashboardCard("Financial Goals", "Set and track your financial goals");
+        JButton setGoalBtn = createCardButton("Set Goal");
+        setGoalBtn.addActionListener(e -> {
+            FinancialGoalsFrame goalsFrame = new FinancialGoalsFrame(email);
+            goalsFrame.setVisible(true);  // This should bring up a GUI to set goals
         });
 
-        printBudgetButton.addActionListener(new ActionListener() { // Hit this button
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Client client = new Client(email, true); // Make a client
-                client.PrintBudgetActivity(); // Shows the print budget screen
-            }
+
+        JButton viewGoalsBtn = createCardButton("View Goals");
+        viewGoalsBtn.addActionListener(e -> {
+            FinancialGoalsFrame frame = new FinancialGoalsFrame(email);
+            frame.showGoalForm("food"); // Make sure this method exists in your FinancialGoalsFrame
         });
 
-        logoutButton.addActionListener(new ActionListener() { // When this is clicked
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new MainFrame(); // Goes back to the main screen
-                dispose(); // Gets rid of this window
-            }
+
+        goalsCard.add(setGoalBtn);
+        goalsCard.add(viewGoalsBtn);
+        contentPanel.add(goalsCard);
+
+        // Card 4: Account Settings
+        JPanel accountCard = createDashboardCard("Account", "Manage your account settings");
+        JButton changePassBtn = createCardButton("Change Password");
+        changePassBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.changePasswordGUI();
         });
 
-        setVisible(true); // Makes the window show up
+        JButton logoutBtn = createCardButton("Logout");
+        logoutBtn.addActionListener(e -> {
+            new MainFrame();
+            dispose();
+        });
+
+        accountCard.add(changePassBtn);
+        accountCard.add(logoutBtn);
+        contentPanel.add(accountCard);
+
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Drag functionality for undecorated window
+        MouseAdapter ma = new MouseAdapter() {
+            private Point initLocation;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                initLocation = e.getPoint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+                int xMoved = e.getX() - initLocation.x;
+                int yMoved = e.getY() - initLocation.y;
+                setLocation(thisX + xMoved, thisY + yMoved);
+            }
+        };
+        addMouseListener(ma);
+        addMouseMotionListener(ma);
+
+        setContentPane(mainPanel);
+        setVisible(true);
+    }
+
+    private JPanel createDashboardCard(String title, String description) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+        card.setBackground(CARD_COLOR);
+        card.setOpaque(true);
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel descLabel = new JLabel(description);
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        descLabel.setForeground(new Color(120, 120, 120));
+
+        card.add(titleLabel);
+        card.add(Box.createRigidArea(new Dimension(0, 5)));
+        card.add(descLabel);
+        card.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        return card;
+    }
+
+    private JButton createCardButton(String text) {
+        JButton button = new JButton(text) {
+            private boolean isHovered = false;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Background with hover effect
+                g2.setColor(isHovered ? new Color(230, 240, 250) : new Color(240, 248, 255));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+
+                // Border
+                g2.setColor(isHovered ? PRIMARY_COLOR : new Color(200, 220, 240));
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
+
+                // Text
+                g2.setColor(PRIMARY_COLOR);
+                g2.setFont(getFont().deriveFont(Font.BOLD, 12f));
+                FontMetrics fm = g2.getFontMetrics();
+                Rectangle2D r = fm.getStringBounds(getText(), g2);
+                int x = (getWidth() - (int) r.getWidth()) / 2;
+                int y = (getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(getText(), x, y);
+
+                g2.dispose();
+            }
+
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        isHovered = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        isHovered = false;
+                        repaint();
+                    }
+                });
+            }
+        };
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(150, 35));
+        button.setMaximumSize(new Dimension(150, 35));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return button;
+    }
+
+    private JButton createIconButton(String text) {
+        JButton button = new JButton(text) {
+            private boolean isHovered = false;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (isHovered) {
+                    g2.setColor(new Color(220, 50, 50));
+                    g2.fillOval(0, 0, getWidth(), getHeight());
+                }
+
+                // Text
+                g2.setColor(isHovered ? Color.WHITE : new Color(150, 150, 150));
+                g2.setFont(getFont().deriveFont(Font.BOLD, 12f));
+                FontMetrics fm = g2.getFontMetrics();
+                Rectangle2D r = fm.getStringBounds(getText(), g2);
+                int x = (getWidth() - (int) r.getWidth()) / 2;
+                int y = (getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(getText(), x, y);
+
+                g2.dispose();
+            }
+
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        isHovered = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        isHovered = false;
+                        repaint();
+                    }
+                });
+            }
+        };
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(30, 30));
+        return button;
+    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ClientDashboardFrame("salman@gmail.com").setVisible(true));
     }
 }
