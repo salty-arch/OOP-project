@@ -84,7 +84,7 @@ public class AdminDashboardFrame extends JFrame {
         JPanel reportsCard = createDashboardCard("System Reports", "View system statistics and reports");
         JButton financialReportBtn = createCardButton("Financial Report");
         financialReportBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Salman has food and water registered in budget. \nAhmad has zero items registered for budget. \nHamza has zero items registered for budget.");
+            JOptionPane.showMessageDialog(this, "Salman has 20 items registered in budget. \nAhmad has zero items registered for budget. \nHamza has zero items registered for budget.");
         });
 
         JButton userActivityBtn = createCardButton("User Activity");
