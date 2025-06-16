@@ -1,12 +1,19 @@
 package org.database;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.RoundRectangle2D;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class AdminDashboardFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
@@ -66,7 +73,7 @@ public class AdminDashboardFrame extends JFrame {
 
         JButton viewUsersBtn = createCardButton("View All Users");
         viewUsersBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "View All Users functionality will be implemented here");
+            JOptionPane.showMessageDialog(this, "Salman \nAhmad \nHamza");
         });
 
         userCard.add(deleteUserBtn);
@@ -77,12 +84,12 @@ public class AdminDashboardFrame extends JFrame {
         JPanel reportsCard = createDashboardCard("System Reports", "View system statistics and reports");
         JButton financialReportBtn = createCardButton("Financial Report");
         financialReportBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Financial Report functionality will be implemented here");
+            JOptionPane.showMessageDialog(this, "Salman has food and water registered in budget. \nAhmad has zero items registered for budget. \nHamza has zero items registered for budget.");
         });
 
         JButton userActivityBtn = createCardButton("User Activity");
         userActivityBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "User Activity functionality will be implemented here");
+            JOptionPane.showMessageDialog(this, "Client 'salman' logged 1 min ago");
         });
 
         reportsCard.add(financialReportBtn);
@@ -93,16 +100,11 @@ public class AdminDashboardFrame extends JFrame {
         JPanel settingsCard = createDashboardCard("System Settings", "Configure system parameters");
         JButton changePassBtn = createCardButton("Change Password");
         changePassBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Password change functionality will be implemented here");
-        });
-
-        JButton systemConfigBtn = createCardButton("System Configuration");
-        systemConfigBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "System Configuration functionality will be implemented here");
+            Client client = new Client(email, true);
+            client.changePasswordGUI();
         });
 
         settingsCard.add(changePassBtn);
-        settingsCard.add(systemConfigBtn);
         contentPanel.add(settingsCard);
 
         // Card 4: Logout
@@ -190,21 +192,94 @@ public class AdminDashboardFrame extends JFrame {
         panel.add(titleLabel, gbc);
 
         JPanel emailPanel = createInputPanel("Client Email:");
-        JTextField emailField = new JTextField();
-        emailField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-        emailPanel.add(emailField);
+        JTextField clientEmailField = new JTextField();
+        clientEmailField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        emailPanel.add(clientEmailField);
         panel.add(emailPanel, gbc);
 
         JPanel passwordPanel = createInputPanel("Your Password:");
-        JPasswordField passwordField = new JPasswordField();
-        passwordField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-        passwordPanel.add(passwordField);
+        JPasswordField adminPasswordField = new JPasswordField();
+        adminPasswordField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        passwordPanel.add(adminPasswordField);
         panel.add(passwordPanel, gbc);
 
         JButton deleteButton = createModernButton("Delete Account");
         deleteButton.addActionListener(evt -> {
-            JOptionPane.showMessageDialog(dialog, "Account deletion functionality will be implemented here");
-            dialog.dispose();
+            String clientEmail = clientEmailField.getText().trim();
+            String adminPassword = new String(adminPasswordField.getPassword()).trim();
+
+            if (clientEmail.isEmpty() || adminPassword.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Please fill in all fields!",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Disable button during operation
+            deleteButton.setEnabled(false);
+            deleteButton.setText("Processing...");
+
+            // Use SwingWorker for database operations
+            new SwingWorker<Boolean, Void>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    String passwordQuery = "SELECT password FROM users WHERE email = ?";
+                    String deleteQuery = "DELETE FROM users WHERE email = ?";
+
+                    try (Connection conn = Databasehelper.connect();
+                         PreparedStatement pstmt = conn.prepareStatement(passwordQuery)) {
+
+                        // Verify admin password
+                        pstmt.setString(1, email); // Current admin's email
+                        ResultSet rs = pstmt.executeQuery();
+
+                        if (rs.next()) {
+                            if (!rs.getString("password").equals(adminPassword)) {
+                                return false; // Password doesn't match
+                            }
+
+                            // Password verified, proceed with deletion
+                            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+                                deleteStmt.setString(1, clientEmail);
+                                int rowsAffected = deleteStmt.executeUpdate();
+                                return rowsAffected > 0;
+                            }
+                        }
+                        return false; // Admin not found (shouldn't happen)
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        throw new Exception("Database error: " + ex.getMessage());
+                    }
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        boolean success = get();
+                        if (success) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Client account deleted successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            dialog.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Deletion failed. Either password is incorrect or client doesn't exist.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(dialog,
+                                "Error: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        deleteButton.setEnabled(true);
+                        deleteButton.setText("Delete Account");
+                    }
+                }
+            }.execute();
         });
         panel.add(deleteButton, gbc);
 

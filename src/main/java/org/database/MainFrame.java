@@ -52,7 +52,7 @@ public class MainFrame extends JFrame {
         // In the clientButton action listener, replace with this:
         clientButton.addActionListener(e -> {
             dispose(); // Close the main frame first
-            new LoginFrame("Client");
+            new ClientLoginFrame();
             dispose();
         });
         mainPanel.add(clientButton, gbc);
@@ -61,7 +61,7 @@ public class MainFrame extends JFrame {
         JButton adminButton = createModernButton("Admin");
         adminButton.setPreferredSize(new Dimension(200, 45));
         adminButton.addActionListener(e -> {
-            new LoginFrame("Admin");
+            new AdminLoginFrame();
             dispose();
         });
         mainPanel.add(adminButton, gbc);

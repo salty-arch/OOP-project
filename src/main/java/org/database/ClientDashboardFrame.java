@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.List;
 
 public class ClientDashboardFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
@@ -86,15 +87,8 @@ public class ClientDashboardFrame extends JFrame {
             frame.setVisible(true);
         });
 
-        JButton viewBudgetsBtn = createCardButton("View Budgets");
-        viewBudgetsBtn.addActionListener(e -> {
-            budgeting budgeting = new budgeting();
-            budgeting.viewBudgetsGUI();
-        });
-
 
         budgetingCard.add(setBudgetBtn);
-        budgetingCard.add(viewBudgetsBtn);
         contentPanel.add(budgetingCard);
 
         // Card 3: Financial Goals
@@ -108,8 +102,30 @@ public class ClientDashboardFrame extends JFrame {
 
         JButton viewGoalsBtn = createCardButton("View Goals");
         viewGoalsBtn.addActionListener(e -> {
-            FinancialGoalsFrame goalsFrame = new FinancialGoalsFrame(email);
-            goalsFrame.setVisible(true); // Make sure this method exists in your FinancialGoalsFrame
+            FinancialGoalsFrame.GoalDAO goalDAO = new FinancialGoalsFrame.GoalDAO(this.email);
+            List<Goal> activeGoals = goalDAO.getGoalsByStatus("active"); // Make sure this method exists in your FinancialGoalsFrame
+
+            String[] columns = {"ID", "Type", "Category", "Amount", "Deadline"};
+            Object[][] data = new Object[activeGoals.size()][5];
+            for (int i = 0; i < activeGoals.size(); i++) {
+                Goal g = activeGoals.get(i);
+                data[i][0] = g.getId();
+                data[i][1] = g.getType();
+                data[i][2] = g.getCategory();
+                data[i][3] = g.getAmount();
+                data[i][4] = g.getDeadline();
+            }
+
+            // 3. Create JTable and show in a dialog
+            JTable table = new JTable(data, columns);
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            JOptionPane.showMessageDialog(
+                    null, // or 'this' if inside a JFrame
+                    scrollPane,
+                    "Active Goals",
+                    JOptionPane.PLAIN_MESSAGE
+            );
         });
 
 

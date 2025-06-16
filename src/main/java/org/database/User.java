@@ -13,7 +13,7 @@ public abstract class User {    //abstract class to group common methods and var
     protected String password;
 
     //common method to be used by client and admin for sign-in
-    String[] get_Account(){
+    String[] get_Account() {
         System.out.println("Enter your email:");
         this.email = scan.next();
         scan.nextLine();
@@ -22,10 +22,12 @@ public abstract class User {    //abstract class to group common methods and var
         this.password = scan.next();
         scan.nextLine();
 
-        return new String[]{email,password};
+        return new String[]{email, password};
     }
 
-    void menu(){}
+    void menu() {
+    }
+
     //Getters
     public String getEmail() {
         return email;
@@ -33,5 +35,9 @@ public abstract class User {    //abstract class to group common methods and var
 
     public String getPassword() {
         return password;
+    }
+
+    public String getType() {
+        return getType();
     }
 }

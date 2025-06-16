@@ -106,7 +106,7 @@ public class AdminLoginFrame extends JFrame {
     private boolean authenticateAdmin(String email, String password) {
         // Placeholder - implement actual admin authentication logic
         // This should check against your database or user store
-        return "admin@example.com".equals(email) && "admin123".equals(password);
+        return "admin@gmail.com".equals(email) && "mjk".equals(password);
     }
 
     private JPanel createInputPanel(String labelText) {

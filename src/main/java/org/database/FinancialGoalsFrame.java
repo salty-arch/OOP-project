@@ -8,12 +8,16 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.geom.Rectangle2D;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.List;
+
 
 import static java.awt.SystemColor.text;
 import static org.database.Main.cin;
@@ -413,106 +417,35 @@ public class FinancialGoalsFrame extends JFrame {
             System.out.println("Setting goal failed: " + e.getMessage());
         }
     }
-    public void setFinancialGoalGUI() {
-        JDialog goalDialog = new JDialog();
-        goalDialog.setTitle("Set Financial Goal");
-        goalDialog.setSize(400, 400);
-        goalDialog.setLocationRelativeTo(null);
-        goalDialog.setLayout(new BorderLayout());
-        goalDialog.setModal(true);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        mainPanel.setLayout(new GridLayout(0, 1, 10, 10));
+    public static class GoalDAO {
+        private String useremail;
 
-        // Goal Name
-        JPanel namePanel = new JPanel(new BorderLayout());
-        JLabel nameLabel = new JLabel("Goal Name:");
-        JTextField nameField = new JTextField();
-        namePanel.add(nameLabel, BorderLayout.NORTH);
-        namePanel.add(nameField, BorderLayout.CENTER);
-        mainPanel.add(namePanel);
+        public GoalDAO(String useremail) {
+            this.useremail = useremail;
+        }
 
-        // Target Amount
-        JPanel targetPanel = new JPanel(new BorderLayout());
-        JLabel targetLabel = new JLabel("Target Amount:");
-        JTextField targetField = new JTextField();
-        targetPanel.add(targetLabel, BorderLayout.NORTH);
-        targetPanel.add(targetField, BorderLayout.CENTER);
-        mainPanel.add(targetPanel);
-
-        // Current Amount
-        JPanel currentPanel = new JPanel(new BorderLayout());
-        JLabel currentLabel = new JLabel("Current Amount:");
-        JTextField currentField = new JTextField();
-        currentPanel.add(currentLabel, BorderLayout.NORTH);
-        currentPanel.add(currentField, BorderLayout.CENTER);
-        mainPanel.add(currentPanel);
-
-        // Deadline
-        JPanel deadlinePanel = new JPanel(new BorderLayout());
-        JLabel deadlineLabel = new JLabel("Deadline (YYYY-MM-DD):");
-        JTextField deadlineField = new JTextField();
-        deadlinePanel.add(deadlineLabel, BorderLayout.NORTH);
-        deadlinePanel.add(deadlineField, BorderLayout.CENTER);
-        mainPanel.add(deadlinePanel);
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton submitButton = new JButton("Submit");
-        JButton cancelButton = new JButton("Cancel");
-        buttonPanel.add(submitButton);
-        buttonPanel.add(cancelButton);
-
-        submitButton.addActionListener(e -> {
-            try {
-                String goalName = nameField.getText();
-                double targetAmount = Double.parseDouble(targetField.getText());
-                double currentAmount = Double.parseDouble(currentField.getText());
-                String deadline = deadlineField.getText();
-
-                if (goalName.isEmpty() || deadline.isEmpty()) {
-                    JOptionPane.showMessageDialog(goalDialog, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+        public List<Goal> getGoalsByStatus(String status) {
+            List<Goal> goals = new ArrayList<>();
+            String sql = "SELECT id, goal_type, category, amount, deadline FROM goals WHERE user_email = ? AND status = ?";
+            try (Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, this.useremail);
+                pstmt.setString(2, status);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    goals.add(new Goal(
+                            rs.getInt("id"),
+                            rs.getString("goal_type"),
+                            rs.getString("category"),
+                            rs.getDouble("amount"),
+                            rs.getString("deadline")
+                    ));
                 }
-                if (targetAmount <= 0 || currentAmount < 0) {
-                    JOptionPane.showMessageDialog(goalDialog, "Amounts must be positive.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Basic date format validation
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                sdf.setLenient(false);
-                try {
-                    Date parsedDate = sdf.parse(deadline);
-                    if (parsedDate.before(new Date())) {
-                        JOptionPane.showMessageDialog(goalDialog, "Deadline cannot be in the past.", "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                } catch (java.text.ParseException ex) {
-                    JOptionPane.showMessageDialog(goalDialog, "Invalid date format. Please use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Call the existing SetGoal method
-                // Note: You'll need to adapt this to match your actual SetGoal method parameters
-                // Currently, your SetGoal method takes different parameters than what we have here
-                // You might need to modify either this call or the SetGoal method
-                this.SetGoal(); // Or create a new version that takes these parameters
-
-                JOptionPane.showMessageDialog(goalDialog, "Financial goal set successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                goalDialog.dispose();
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(goalDialog, "Please enter valid numbers for amounts.", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(goalDialog, "Error setting goal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        });
-
-        cancelButton.addActionListener(e -> goalDialog.dispose());
-
-        goalDialog.add(mainPanel, BorderLayout.CENTER);
-        goalDialog.add(buttonPanel, BorderLayout.SOUTH);
-        goalDialog.setVisible(true);
+            return goals;
+        }
     }
+
 }

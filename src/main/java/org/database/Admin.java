@@ -1,5 +1,6 @@
 package org.database;
 
+import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -87,6 +88,29 @@ public class Admin extends User{
             }
         } catch (SQLException e) {
             System.out.println("Verifying password failed: " + e.getMessage());
+        }
+    }
+    public void changePasswordGUI() {
+        String new_pass = JOptionPane.showInputDialog(null, "Enter new password:");
+
+        if (new_pass != null && !new_pass.isEmpty()) {
+            String sql = "UPDATE users SET password = ? WHERE email = ?";
+            try (Connection conn = Databasehelper.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, new_pass);
+                pstmt.setString(2, this.email);
+                int updatedRows = pstmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    JOptionPane.showMessageDialog(null, "Password changed successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Password change failed.");
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error occurred: " + e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Password change cancelled or invalid input.");
         }
     }
 }
