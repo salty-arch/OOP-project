@@ -1,8 +1,12 @@
-package org.database;
+package org.database.dashboard;
+
+import org.database.model.Client;
+import org.database.util.Databasehelper;
+import org.database.ui.FinancialReportFrame;
+import org.database.ui.UserActivityFrame;
+import org.database.main.MainFrame;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -13,7 +17,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public class AdminDashboardFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
@@ -73,8 +76,30 @@ public class AdminDashboardFrame extends JFrame {
 
         JButton viewUsersBtn = createCardButton("View All Users");
         viewUsersBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Salman \nAhmad \nHamza");
+            StringBuilder usersList = new StringBuilder();
+            String sql = "SELECT email FROM users WHERE role = 'Client'"; // Update field names as per your table
+
+            try (Connection conn = Databasehelper.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(sql);
+                 ResultSet rs = pstmt.executeQuery()) {
+
+                while (rs.next()) {
+                    String name = rs.getString("email");
+                    usersList.append(", User: ").append(name)
+                            .append("\n");
+                }
+
+                if (usersList.length() == 0) {
+                    usersList.append("No users found.");
+                }
+
+            } catch (SQLException ex) {
+                usersList.append("Error retrieving users: ").append(ex.getMessage());
+            }
+
+            JOptionPane.showMessageDialog(this, usersList.toString(), "All Users", JOptionPane.INFORMATION_MESSAGE);
         });
+
 
         userCard.add(deleteUserBtn);
         userCard.add(viewUsersBtn);
@@ -84,13 +109,14 @@ public class AdminDashboardFrame extends JFrame {
         JPanel reportsCard = createDashboardCard("System Reports", "View system statistics and reports");
         JButton financialReportBtn = createCardButton("Financial Report");
         financialReportBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Salman has 20 items registered in budget. \nAhmad has zero items registered for budget. \nHamza has zero items registered for budget.");
+            new FinancialReportFrame();
         });
 
         JButton userActivityBtn = createCardButton("User Activity");
         userActivityBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Client 'salman' logged 1 min ago");
+            new UserActivityFrame();
         });
+
 
         reportsCard.add(financialReportBtn);
         reportsCard.add(userActivityBtn);
@@ -243,6 +269,8 @@ public class AdminDashboardFrame extends JFrame {
                             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
                                 deleteStmt.setString(1, clientEmail);
                                 int rowsAffected = deleteStmt.executeUpdate();
+                                Databasehelper.logActivity(email, "DELETE_CLIENT", "Deleted client account: " + clientEmail);
+
                                 return rowsAffected > 0;
                             }
                         }

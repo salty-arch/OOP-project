@@ -1,4 +1,4 @@
-package org.database;
+package org.database.ui;
 
 import javax.swing.*;
 import java.awt.*;

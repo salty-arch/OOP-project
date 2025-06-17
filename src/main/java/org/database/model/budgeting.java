@@ -1,4 +1,6 @@
-package org.database;
+package org.database.model;
+
+import org.database.util.Databasehelper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -6,14 +8,10 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.geom.RoundRectangle2D;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Scanner;
+
 
 public class budgeting {
     private String email;

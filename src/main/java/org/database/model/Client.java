@@ -1,11 +1,12 @@
-package org.database;
+package org.database.model;
 
-import java.util.Date;  // Add this import
+import org.database.util.Databasehelper;
+import org.database.util.ProgramHelper;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class Client extends User    //inheritance
@@ -15,7 +16,7 @@ public class Client extends User    //inheritance
 
     private FinancialGoals goals;
 
-    Client(){
+    public Client(){
         String[] account = get_Account();   //uses the get_Account method from User class
         this.email = account[0];    //email initialization
         this.password = account[1]; //password initialization
@@ -45,7 +46,7 @@ public class Client extends User    //inheritance
     }
 
     @Override
-    void menu(){     //menu interface for client
+    public void menu(){     //menu interface for client
         int choice1 = -1;
         int choice2 = -1;
         int choice3 = -1;
@@ -141,31 +142,55 @@ public class Client extends User    //inheritance
 
 
 
-    private void Change_pass(){     //method to change password
-        //havent added a option to enter old password before opting for new password yet, will do soon.
-        System.out.println("Enter new password:");
-        String new_pass = cin.next();
+    private void Change_pass() {
+        Scanner cin = new Scanner(System.in);
 
-        String sql = "UPDATE users SET password = ? WHERE email = ?";
-        try (Connection conn = Databasehelper.connect();    //connects to the database
-             PreparedStatement pstmt = conn.prepareStatement(sql))      //makes a preparedstatement to execute the update in sql
-        {
-            pstmt.setString(1,new_pass);
-            pstmt.setString(2,this.email);
-            int updatedRows = pstmt.executeUpdate();
+        System.out.print("Enter current password: ");
+        String oldPass = cin.nextLine();
 
-            if (updatedRows > 0)    //if updatedrows == 0 this means password change failed since after the update.
-                                    // there are no rows for the given email
-            {
-                System.out.println("Password changed successfully!");
-            } else {
-                System.out.println("Password change failed.");
+        System.out.print("Enter new password: ");
+        String newPass = cin.nextLine();
+
+        String verifySql = "SELECT password FROM users WHERE email = ?";
+        String updateSql = "UPDATE users SET password = ? WHERE email = ?";
+
+        try (Connection conn = Databasehelper.connect()) {
+            // Verify current password
+            try (PreparedStatement verifyStmt = conn.prepareStatement(verifySql)) {
+                verifyStmt.setString(1, this.email);
+                ResultSet rs = verifyStmt.executeQuery();
+
+                if (rs.next()) {
+                    String dbPass = rs.getString("password");
+                    if (!dbPass.equals(oldPass)) {
+                        System.out.println("Current password is incorrect.");
+                        return;
+                    }
+                } else {
+                    System.out.println("User not found.");
+                    return;
+                }
             }
 
-        } catch (SQLException e) {      //catching any error occured while executing the update
-            System.out.println("Error occured: " + e.getMessage());
+            // Update password
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setString(1, newPass);
+                updateStmt.setString(2, this.email);
+
+                int updatedRows = updateStmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    System.out.println("Password changed successfully!");
+                } else {
+                    System.out.println("Password change failed.");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e.getMessage());
         }
     }
+
 
 
 

@@ -1,4 +1,4 @@
-package org.database;
+package org.database.util;
 
 public class Goal {
     private int id;

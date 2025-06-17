@@ -1,8 +1,6 @@
-package org.database;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+package org.database.util;
+import java.sql.*;
+
 
 public class Databasehelper {   //class for database creation and modification
     private static final String URL = "jdbc:sqlite:src/main/java/org/database/database.db";
@@ -76,6 +74,40 @@ public class Databasehelper {   //class for database creation and modification
             System.out.println("Table 3 created!");
         } catch (SQLException e) {
             System.out.println("Creating table failed: " + e.getMessage());
+        }
+    }
+
+    public static void create_activity_log_table() {
+        String sql = """
+        CREATE TABLE IF NOT EXISTS activity_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            activity_type TEXT NOT NULL,
+            activity_details TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    """;
+
+        try (Connection conn = connect();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+            System.out.println("Activity log table created or already exists.");
+        } catch (SQLException e) {
+            System.out.println("Failed to create activity log table: " + e.getMessage());
+        }
+    }
+
+    public static void logActivity(String userEmail, String activityType, String details) {
+        String sql = "INSERT INTO activity_log(user_email, activity_type, activity_details) VALUES (?, ?, ?)";
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userEmail);
+            pstmt.setString(2, activityType);
+            pstmt.setString(3, details);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Failed to log activity: " + e.getMessage());
         }
     }
 }

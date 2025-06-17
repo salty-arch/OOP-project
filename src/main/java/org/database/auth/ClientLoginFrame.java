@@ -1,4 +1,9 @@
-package org.database;
+package org.database.auth;
+
+import org.database.dashboard.ClientDashboardFrame;
+import org.database.main.MainFrame;
+import org.database.util.Databasehelper;
+import org.database.util.ProgramHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -109,6 +114,7 @@ public class ClientLoginFrame extends JFrame {
 
         if (ProgramHelper.VerifyUser(email, password)) {
             new ClientDashboardFrame(email);
+            Databasehelper.logActivity(email, "LOGIN", "User logged in.");
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Invalid email or password!", "Error", JOptionPane.ERROR_MESSAGE);

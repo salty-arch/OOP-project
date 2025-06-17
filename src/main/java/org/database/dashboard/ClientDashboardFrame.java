@@ -1,4 +1,13 @@
-package org.database;
+package org.database.dashboard;
+
+import org.database.auth.ChangePasswordFrame;
+import org.database.auth.LoginFrame;
+import org.database.model.Client;
+import org.database.ui.BudgetManagementFrame;
+import org.database.ui.FinancialGoalsFrame;
+import org.database.util.Databasehelper;
+import org.database.util.Goal;
+import org.database.util.TransitionUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -25,7 +34,7 @@ public class ClientDashboardFrame extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("PakFinance Tracker - June 2024");
+        setTitle("PakFinance Tracker - 2025");
         setSize(900, 650);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -125,7 +134,8 @@ public class ClientDashboardFrame extends JFrame {
         JButton setBudgetBtn = createCardButton("Set Budget");
         setBudgetBtn.addActionListener(e -> {
             BudgetManagementFrame frame = new BudgetManagementFrame(email);
-            frame.setVisible(true);
+            TransitionUtils.fadeIn(frame);
+
         });
 
         budgetingCard.add(setBudgetBtn);
@@ -139,7 +149,8 @@ public class ClientDashboardFrame extends JFrame {
         JButton setGoalBtn = createCardButton("Set Goal");
         setGoalBtn.addActionListener(e -> {
             FinancialGoalsFrame goalsFrame = new FinancialGoalsFrame(email);
-            goalsFrame.setVisible(true);  // This should bring up a GUI to set goals
+            TransitionUtils.fadeIn(goalsFrame);
+            // This should bring up a GUI to set goals
         });
 
         JButton viewGoalsBtn = createCardButton("View Goals");
@@ -180,17 +191,28 @@ public class ClientDashboardFrame extends JFrame {
         accountCard.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton changePassBtn = createCardButton("Change Password");
-        changePassBtn.addActionListener(e -> {
-            // Implementation would go here
-        });
+        changePassBtn.addActionListener(e -> new ChangePasswordFrame(this, email));
+
 
         JButton generateReportBtn = createCardButton("Monthly Report");
         generateReportBtn.addActionListener(e -> generateMonthlyReport());
 
         JButton logoutBtn = createCardButton("Logout");
         logoutBtn.addActionListener(e -> {
-            // Implementation would go here
+            int confirm = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to logout?",
+                    "Logout Confirmation",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                Databasehelper.logActivity(email, "LOGOUT", "User logged out.");
+                new LoginFrame("client");
+                SwingUtilities.getWindowAncestor(logoutBtn).dispose();
+            }
         });
+
 
         accountCard.add(changePassBtn);
         accountCard.add(Box.createRigidArea(new Dimension(0, 10)));

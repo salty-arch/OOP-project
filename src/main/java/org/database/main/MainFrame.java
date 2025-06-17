@@ -1,9 +1,11 @@
-package org.database;
+package org.database.main;
+
+import org.database.util.Databasehelper;
+import org.database.auth.AdminLoginFrame;
+import org.database.auth.ClientLoginFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -148,7 +150,7 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        Databasehelper.create_table();
+        Databasehelper.create_activity_log_table();
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

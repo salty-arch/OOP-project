@@ -1,4 +1,7 @@
-package org.database;
+package org.database.auth;
+
+import org.database.dashboard.AdminDashboardFrame;
+import org.database.main.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -106,7 +109,7 @@ public class AdminLoginFrame extends JFrame {
     private boolean authenticateAdmin(String email, String password) {
         // Placeholder - implement actual admin authentication logic
         // This should check against your database or user store
-        return "admin@gmail.com".equals(email) && "mjk".equals(password);
+        return "kaka@gmail.com".equals(email) && "mjk".equals(password);
     }
 
     private JPanel createInputPanel(String labelText) {

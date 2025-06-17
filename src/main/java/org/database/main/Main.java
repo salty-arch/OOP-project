@@ -1,6 +1,8 @@
-package org.database;
+package org.database.main;
 
-import javax.xml.crypto.Data;
+import org.database.model.Admin;
+import org.database.model.Client;
+
 import java.util.Scanner;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.

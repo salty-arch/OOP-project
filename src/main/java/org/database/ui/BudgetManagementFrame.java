@@ -1,4 +1,8 @@
-package org.database;
+package org.database.ui;
+
+import org.database.util.ProgramHelper;
+import org.database.model.budgeting;
+import org.database.dashboard.ClientDashboardFrame;
 
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -6,11 +10,11 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Map;
 
 public class BudgetManagementFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
@@ -234,10 +238,15 @@ public class BudgetManagementFrame extends JFrame {
         // Budget Summary Panel
         JPanel summaryPanel = new JPanel(new GridLayout(1, 3, 10, 10));
         summaryPanel.setOpaque(false);
+        Map<String, Double> budgetSummary = ProgramHelper.getBudgetSummary(email); // pass logged-in client's email
 
-        JPanel totalBudgetPanel = createSummaryCard("Total Budget", "PKR 10,000", PRIMARY_COLOR);
-        JPanel remainingBudgetPanel = createSummaryCard("Remaining", "PKR 7,500", new Color(50, 205, 50));
-        JPanel spentBudgetPanel = createSummaryCard("Spent", "PKR 2,500", new Color(220, 53, 69));
+        double total = budgetSummary.getOrDefault("total", 0.0);
+        double remaining = budgetSummary.getOrDefault("remaining", 0.0);
+        double spent = budgetSummary.getOrDefault("spent", 0.0);
+
+        JPanel totalBudgetPanel = createSummaryCard("Total Budget", "PKR " + total, PRIMARY_COLOR);
+        JPanel remainingBudgetPanel = createSummaryCard("Remaining", "PKR " + remaining, new Color(50, 205, 50));
+        JPanel spentBudgetPanel = createSummaryCard("Spent", "PKR " + spent, new Color(220, 53, 69));
 
         summaryPanel.add(totalBudgetPanel);
         summaryPanel.add(remainingBudgetPanel);
@@ -277,7 +286,6 @@ public class BudgetManagementFrame extends JFrame {
         setVisible(true);
     }
 
-    // ... [rest of your methods remain unchanged] ...
 
     private void refreshData() {
         try {

@@ -1,6 +1,12 @@
-package org.database;
+package org.database.ui;
+
+import org.database.util.Databasehelper;
+import org.database.util.Goal;
+import org.database.dashboard.ClientDashboardFrame;
+import org.database.model.FinancialGoals;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -10,17 +16,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Scanner;
 import java.util.List;
 
 
-import static java.awt.SystemColor.text;
-import static org.database.Main.cin;
+import static org.database.main.Main.cin;
 
 
 public class FinancialGoalsFrame extends JFrame {
@@ -104,20 +106,21 @@ public class FinancialGoalsFrame extends JFrame {
 
         // Active Goals Tab
         JPanel activeGoalsPanel = new JPanel(new BorderLayout());
-        activeGoalsPanel.setBackground(Color.WHITE);
-        // Add table or list of active goals here
+        JTable activeTable = new JTable(getGoalsTableModel("active", email));
+        activeGoalsPanel.add(new JScrollPane(activeTable), BorderLayout.CENTER);
         tabbedPane.addTab("Active Goals", activeGoalsPanel);
+
 
         // Completed Goals Tab
         JPanel completedGoalsPanel = new JPanel(new BorderLayout());
-        completedGoalsPanel.setBackground(Color.WHITE);
-        // Add table or list of completed goals here
+        JTable completedTable = new JTable(getGoalsTableModel("completed", email));
+        completedGoalsPanel.add(new JScrollPane(completedTable), BorderLayout.CENTER);
         tabbedPane.addTab("Completed Goals", completedGoalsPanel);
 
         // Missed Goals Tab
         JPanel missedGoalsPanel = new JPanel(new BorderLayout());
-        missedGoalsPanel.setBackground(Color.WHITE);
-        // Add table or list of missed goals here
+        JTable missedTable = new JTable(getGoalsTableModel("missed", email));
+        missedGoalsPanel.add(new JScrollPane(missedTable), BorderLayout.CENTER);
         tabbedPane.addTab("Missed Goals", missedGoalsPanel);
 
         contentPanel.add(tabbedPane);
@@ -128,6 +131,35 @@ public class FinancialGoalsFrame extends JFrame {
         setContentPane(mainPanel);
         setVisible(true);
     }
+
+    public DefaultTableModel getGoalsTableModel(String status, String userEmail) {
+        String[] columns = {"ID", "Type", "Category", "Amount", "Deadline"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+        String sql = "SELECT id, goal_type, category, amount, deadline FROM goals WHERE user_email = ? AND status = ?";
+        try (Connection conn = Databasehelper.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userEmail);
+            pstmt.setString(2, status);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getInt("id"),
+                        rs.getString("goal_type"),
+                        rs.getString("category"),
+                        rs.getDouble("amount"),
+                        rs.getString("deadline")
+                };
+                model.addRow(row);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching goals: " + e.getMessage());
+        }
+        return model;
+    }
+
 
     private JButton createModernButton(String text) {
         JButton button = new JButton(text) {

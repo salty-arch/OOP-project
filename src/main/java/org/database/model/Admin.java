@@ -1,19 +1,23 @@
-package org.database;
+package org.database.model;
+
+import org.database.util.Databasehelper;
+import org.database.util.ProgramHelper;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class Admin extends User{
+public class Admin extends User {
     private static final Scanner cin = new Scanner(System.in);
     private String role = "Admin";
 
     private FinancialGoals goals;
 
-    Admin(){
+    public Admin(){
         String[] account = get_Account();   //uses the get_Account method from User class
         this.email = account[0];    //email initialization
         this.password = account[1]; //password initialization
@@ -34,26 +38,8 @@ public class Admin extends User{
         return super.get_Account();
     }
 
-    @Override
-    void menu(){
-        int choice1 = -1;
 
-        while(choice1 != 0){
-            System.out.println("1.Delete Client Acc\n0.Exit");
-            choice1 = cin.nextInt();
-            cin.nextLine();
-            switch(choice1){
-                case 1:
-                    DeleteClientAcc();
-                    break;
-                case 0:
-                    System.out.println("Returning to Main Menu...");
-                    break;
-            }
-        }
-    }
-
-    void DeleteClientAcc(){     //Method to delete Clients account
+    void DeleteClientAcc(ActionEvent k){     //Method to delete Clients account
         System.out.println("Enter the email of the Account (Client) you want to remove: ");
         String email = cin.nextLine().trim();
 
@@ -63,7 +49,7 @@ public class Admin extends User{
         String password = "SELECT password FROM users WHERE email = ?";
         String Delete = "DELETE FROM users WHERE email = ?";
 
-        try(Connection conn = Databasehelper.connect();PreparedStatement pstmt = conn.prepareStatement(password)){
+        try(Connection conn = Databasehelper.connect(); PreparedStatement pstmt = conn.prepareStatement(password)){
             pstmt.setString(1,this.email);
             ResultSet rs = pstmt.executeQuery();
             if(rs.next()){

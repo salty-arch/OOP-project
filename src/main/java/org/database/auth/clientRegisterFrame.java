@@ -1,28 +1,30 @@
-package org.database;
+package org.database.auth;
+
+import org.database.util.Databasehelper;
 
 import javax.swing.*;
-import java.awt.*;import java.awt.geom.Rectangle2D;
-
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class LoginFrame extends JFrame {
+class ClientRegisterFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
     private static final Color BACKGROUND_COLOR = new Color(240, 245, 249);
 
     private JTextField emailField;
     private JPasswordField passwordField;
-    private final String userType;
+    private Point initialClick;
 
-    public LoginFrame(String userType) {
-        this.userType = userType;
-
-        setTitle(userType + " Login");
+    public ClientRegisterFrame() {
+        setTitle("Client Registration");
         setSize(500, 400);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // Added proper close operation
         setLocationRelativeTo(null);
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
@@ -46,7 +48,7 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(10, 0, 10, 0);
 
         // Title Label
-        JLabel titleLabel = new JLabel(userType + " Login", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Client Registration", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titleLabel.setForeground(PRIMARY_COLOR);
         mainPanel.add(titleLabel, gbc);
@@ -65,49 +67,37 @@ public class LoginFrame extends JFrame {
         passwordPanel.add(passwordField);
         mainPanel.add(passwordPanel, gbc);
 
-        // Login Button
-        JButton loginButton = createModernButton("Login");
-        loginButton.addActionListener(this::loginAction);
-        mainPanel.add(loginButton, gbc);
-
-        // Register Button (only for Client)
-        if (userType.equals("Client")) {
-            JButton registerButton = createModernButton("Register");
-            registerButton.addActionListener(e -> {
-                new ClientRegisterFrame();
-                dispose();
-            });
-            mainPanel.add(registerButton, gbc);
-        }
+        // Register Button
+        JButton registerButton = createModernButton("Register");
+        registerButton.addActionListener(this::registerAction);
+        mainPanel.add(registerButton, gbc);
 
         // Back Button
         JButton backButton = createModernButton("Back");
         backButton.addActionListener(e -> {
-            new MainFrame();
+            new LoginFrame("Client").setVisible(true);  // Added setVisible(true)
             dispose();
         });
         mainPanel.add(backButton, gbc);
 
         // Drag functionality for undecorated window
-        MouseAdapter ma = new MouseAdapter() {
-            private Point initLocation;
-
-            @Override
+        addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                initLocation = e.getPoint();
+                initialClick = e.getPoint();
             }
+        });
 
-            @Override
+        addMouseMotionListener(new MouseAdapter() {
             public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-                int xMoved = e.getX() - initLocation.x;
-                int yMoved = e.getY() - initLocation.y;
-                setLocation(thisX + xMoved, thisY + yMoved);
+                if (initialClick != null) {
+                    int thisX = getLocation().x;
+                    int thisY = getLocation().y;
+                    int xMoved = e.getX() - initialClick.x;
+                    int yMoved = e.getY() - initialClick.y;
+                    setLocation(thisX + xMoved, thisY + yMoved);
+                }
             }
-        };
-        addMouseListener(ma);
-        addMouseMotionListener(ma);
+        });
 
         setContentPane(mainPanel);
         setVisible(true);
@@ -121,27 +111,47 @@ public class LoginFrame extends JFrame {
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         panel.add(label, BorderLayout.WEST);
 
-        JTextField field = new JTextField(20);
-        field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        panel.add(field, BorderLayout.CENTER);
-
         return panel;
     }
 
-    private void loginAction(ActionEvent e) {
+    private void registerAction(ActionEvent e) {
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
 
-        if (ProgramHelper.VerifyUser(email, password)) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
-            new ClientDashboardFrame(email);
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid email or password!", "Error", JOptionPane.ERROR_MESSAGE);
+        if (email.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        if (!isValidEmail(email)) {  // Changed from ProgramHelper.VerifyEmail to local method
+            JOptionPane.showMessageDialog(this, "Invalid email format.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = Databasehelper.connect()) {  // Fixed typo in DatabaseHelper
+            String sql = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, email);
+                pstmt.setString(2, password);  // Note: Should hash password in production
+                pstmt.setString(3, "Client");
+                pstmt.executeUpdate();
+
+                JOptionPane.showMessageDialog(this, "Registration successful!");
+                new LoginFrame("Client").setVisible(true);  // Added setVisible(true)
+                dispose();
+            }
+        } catch (SQLException ex) {
+            if (ex.getMessage().contains("unique constraint")) {
+                JOptionPane.showMessageDialog(this, "Email already registered.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private boolean isValidEmail(String email) {
+        // Simple email validation - replace with proper validation
+        return email.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     }
 
     private JButton createModernButton(String text) {
@@ -169,9 +179,8 @@ public class LoginFrame extends JFrame {
                 g2.dispose();
             }
 
-            @Override
-            public void updateUI() {
-                super.updateUI();
+            {
+                // Initializer block for mouse listeners
                 addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseEntered(MouseEvent e) {

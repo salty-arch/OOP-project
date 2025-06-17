@@ -1,9 +1,5 @@
-package org.database;
+package org.database.model;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public abstract class User {    //abstract class to group common methods and variables
@@ -25,7 +21,7 @@ public abstract class User {    //abstract class to group common methods and var
         return new String[]{email, password};
     }
 
-    void menu() {
+    public void menu() {
     }
 
     //Getters
