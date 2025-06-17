@@ -1,20 +1,19 @@
 package org.database.main;
 
-import org.database.util.Databasehelper;
 import org.database.auth.AdminLoginFrame;
 import org.database.auth.ClientLoginFrame;
+import org.database.util.Databasehelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class MainFrame extends JFrame {
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
     private static final Color HOVER_COLOR = new Color(52, 152, 219);
-    private static final Color BACKGROUND_COLOR = new Color(240, 245, 249);
+    private static final Color BACKGROUND_COLOR = new Color(245, 250, 255);
+    private static final Color SHADOW_COLOR = new Color(0, 0, 0, 30);
 
     public MainFrame() {
         setTitle("Financial Manager");
@@ -24,57 +23,64 @@ public class MainFrame extends JFrame {
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
 
+        // Main panel with shadow
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Shadow effect
+                g2d.setColor(SHADOW_COLOR);
+                g2d.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 25, 25);
+
+                // Background
                 g2d.setColor(BACKGROUND_COLOR);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                g2d.fillRoundRect(0, 0, getWidth() - 10, getHeight() - 10, 20, 20);
             }
         };
+
         mainPanel.setLayout(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 0, 10, 0);
+        gbc.insets = new Insets(15, 0, 15, 0);
 
-        // Title Label
         JLabel titleLabel = new JLabel("Financial Manager", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titleLabel.setForeground(PRIMARY_COLOR);
         mainPanel.add(titleLabel, gbc);
 
-        // Client Button
+        // Subtitle
+        JLabel subtitle = new JLabel("Select your role", SwingConstants.CENTER);
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitle.setForeground(Color.GRAY);
+        mainPanel.add(subtitle, gbc);
+
+        // Buttons
         JButton clientButton = createModernButton("Client");
-        clientButton.setPreferredSize(new Dimension(200, 45));
-        // In the clientButton action listener, replace with this:
         clientButton.addActionListener(e -> {
-            dispose(); // Close the main frame first
             new ClientLoginFrame();
             dispose();
         });
         mainPanel.add(clientButton, gbc);
 
-        // Admin Button
         JButton adminButton = createModernButton("Admin");
-        adminButton.setPreferredSize(new Dimension(200, 45));
         adminButton.addActionListener(e -> {
             new AdminLoginFrame();
             dispose();
         });
         mainPanel.add(adminButton, gbc);
 
-        // Exit Button
         JButton exitButton = createModernButton("Exit");
-        exitButton.setPreferredSize(new Dimension(200, 45));
+        exitButton.setBackground(new Color(200, 55, 55));
         exitButton.addActionListener(e -> System.exit(0));
         mainPanel.add(exitButton, gbc);
 
-        // Drag functionality for undecorated window
+        // Drag window functionality
         MouseAdapter ma = new MouseAdapter() {
             private Point initLocation;
 
@@ -85,11 +91,9 @@ public class MainFrame extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
                 int xMoved = e.getX() - initLocation.x;
                 int yMoved = e.getY() - initLocation.y;
-                setLocation(thisX + xMoved, thisY + yMoved);
+                setLocation(getLocation().x + xMoved, getLocation().y + yMoved);
             }
         };
         addMouseListener(ma);
@@ -108,17 +112,16 @@ public class MainFrame extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Background with hover effect
+                // Color transition
                 g2.setColor(isHovered ? HOVER_COLOR : PRIMARY_COLOR);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
 
                 // Text
                 g2.setColor(Color.WHITE);
                 g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
                 FontMetrics fm = g2.getFontMetrics();
-                Rectangle2D r = fm.getStringBounds(getText(), g2);
-                int x = (getWidth() - (int) r.getWidth()) / 2;
-                int y = (getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+                int x = (getWidth() - fm.stringWidth(getText())) / 2;
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
                 g2.drawString(getText(), x, y);
 
                 g2.dispose();
@@ -142,6 +145,7 @@ public class MainFrame extends JFrame {
                 });
             }
         };
+        button.setPreferredSize(new Dimension(200, 45));
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
