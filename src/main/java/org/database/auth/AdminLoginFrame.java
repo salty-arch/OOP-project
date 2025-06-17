@@ -12,8 +12,8 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.RoundRectangle2D;
 
 public class AdminLoginFrame extends JFrame {
-    private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
-    private static final Color BACKGROUND_COLOR = new Color(240, 245, 249);
+    private static final Color PRIMARY_COLOR = new Color(0, 102, 0);
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 240);
     private Point initialClick;
 
     private JTextField emailField;

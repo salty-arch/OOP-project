@@ -10,9 +10,9 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class MainFrame extends JFrame {
-    private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
+    private static final Color PRIMARY_COLOR = new Color(0, 102, 0);
     private static final Color HOVER_COLOR = new Color(52, 152, 219);
-    private static final Color BACKGROUND_COLOR = new Color(245, 250, 255);
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 240);
     private static final Color SHADOW_COLOR = new Color(0, 0, 0, 30);
 
     public MainFrame() {

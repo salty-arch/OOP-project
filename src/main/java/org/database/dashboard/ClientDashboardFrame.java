@@ -1,6 +1,5 @@
 package org.database.dashboard;
 
-import org.database.auth.ChangePasswordFrame;
 import org.database.auth.LoginFrame;
 import org.database.model.Client;
 import org.database.ui.BudgetManagementFrame;
@@ -62,7 +61,7 @@ public class ClientDashboardFrame extends JFrame {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("PakFinance Tracker - June 2024", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("PakFinance Tracker - 2025", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titleLabel.setForeground(PRIMARY_COLOR);
 
@@ -191,7 +190,10 @@ public class ClientDashboardFrame extends JFrame {
         accountCard.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton changePassBtn = createCardButton("Change Password");
-        changePassBtn.addActionListener(e -> new ChangePasswordFrame(this, email));
+        changePassBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.changePasswordGUI();
+        });
 
 
         JButton generateReportBtn = createCardButton("Monthly Report");

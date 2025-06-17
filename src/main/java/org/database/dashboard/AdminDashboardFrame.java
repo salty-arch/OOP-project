@@ -19,8 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class AdminDashboardFrame extends JFrame {
-    private static final Color PRIMARY_COLOR = new Color(70, 130, 180);
-    private static final Color BACKGROUND_COLOR = new Color(240, 245, 249);
+    private static final Color PRIMARY_COLOR = new Color(0, 102, 0);
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 240);
     private static final Color CARD_COLOR = new Color(255, 255, 255);
     private Point initialClick;
 
