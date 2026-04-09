@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Locale;
 import java.util.Map;
 
 public class BudgetManagementFrame extends JFrame {
@@ -345,7 +346,7 @@ public class BudgetManagementFrame extends JFrame {
         DefaultTableModel model = (DefaultTableModel) budgetTable.getModel();
         model.setRowCount(0); // Clear existing data
 
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PK"));
 
         for (budgeting.BudgetItem item : budgets) {
             model.addRow(new Object[]{
