@@ -1,0 +1,27 @@
+Table created!
+Table 2 created!
+Table 3 created!
+Activity log table created or already exists.
+Server running at http://localhost:7000
+[LOGIN] Request received
+[LOGIN] Method OK
+[LOGIN] Params: {email=admin@gmail.com, password=mjk}
+[LOGIN] conn=org.sqlite.jdbc4.JDBC4Connection@2488722c
+[LOGIN] stmt created
+[LOGIN] params set
+[LOGIN] query executed
+[LOGIN] user found
+Failed to log activity: [SQLITE_BUSY] The database file is locked (database is locked)
+[LOGIN] sending success response
+[LOGIN] success response sent
+[LOGIN] Request received
+[LOGIN] Method OK
+[LOGIN] Params: {email=salman@gmail.com, password=mkk}
+[LOGIN] conn=org.sqlite.jdbc4.JDBC4Connection@6a0ef56
+[LOGIN] stmt created
+[LOGIN] params set
+[LOGIN] query executed
+[LOGIN] user found
+Failed to log activity: [SQLITE_BUSY] The database file is locked (database is locked)
+[LOGIN] sending success response
+[LOGIN] success response sent

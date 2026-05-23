@@ -1,0 +1,683 @@
+package dashboard;
+
+import auth.LoginFrame;
+import model.Client;
+import ui.BudgetManagementFrame;
+import ui.FinancialGoalsFrame;
+import util.Databasehelper;
+import util.Goal;
+import util.TransitionUtils;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.io.*;
+import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
+
+public class ClientDashboardFrame extends JFrame {
+    private static final Color PRIMARY_COLOR = new Color(0, 102, 0); // Dark Green for Pakistani theme
+    private static final Color SECONDARY_COLOR = new Color(255, 204, 0); // Golden yellow
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 240); // Light green background
+    private static final Color CARD_COLOR = new Color(255, 255, 255);
+    private static final Font PAKISTANI_FONT = new Font("Segoe UI", Font.PLAIN, 14);
+
+    private final String email;
+
+    public ClientDashboardFrame(String email) {
+        this.email = email;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("PakFinance Tracker - 2025");
+        setSize(900, 650);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setUndecorated(true);
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
+
+        // Main panel with gradient background
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                GradientPaint gradient = new GradientPaint(0, 0, new Color(240, 248, 240),
+                        0, getHeight(), new Color(220, 240, 220));
+                g2d.setPaint(gradient);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Header Panel with Pakistani theme
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+
+        JLabel titleLabel = new JLabel("PakFinance Tracker - 2025", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setForeground(PRIMARY_COLOR);
+
+        // Add crescent moon and star icon
+        JLabel iconLabel = new JLabel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Draw crescent moon
+                g2d.setColor(SECONDARY_COLOR);
+                g2d.fillOval(5, 5, 30, 30);
+                g2d.setColor(BACKGROUND_COLOR);
+                g2d.fillOval(10, 5, 30, 30);
+
+                // Draw star
+                int[] xPoints = {40, 45, 55, 45, 40, 35, 25, 35};
+                int[] yPoints = {15, 25, 25, 35, 45, 35, 25, 25};
+                g2d.setColor(SECONDARY_COLOR);
+                g2d.fillPolygon(xPoints, yPoints, 8);
+            }
+        };
+        iconLabel.setPreferredSize(new Dimension(60, 50));
+
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        titlePanel.setOpaque(false);
+        titlePanel.add(iconLabel);
+        titlePanel.add(titleLabel);
+        headerPanel.add(titlePanel, BorderLayout.CENTER);
+
+        JButton closeButton = createIconButton("X");
+        closeButton.addActionListener(e -> System.exit(0));
+        headerPanel.add(closeButton, BorderLayout.EAST);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Content Panel
+        JPanel contentPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        // Card 1: Transactions
+        JPanel transactionsCard = createDashboardCard("Transactions", "Manage your daily financial activities");
+        transactionsCard.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JButton enterAmountBtn = createCardButton("Add Transaction");
+        enterAmountBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.amountGUI();
+        });
+
+        JButton viewTransactionsBtn = createCardButton("View Transactions");
+        viewTransactionsBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.printAmountGUI();
+        });
+
+        transactionsCard.add(enterAmountBtn);
+        transactionsCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        transactionsCard.add(viewTransactionsBtn);
+        contentPanel.add(transactionsCard);
+
+        // Card 2: Budgeting
+        JPanel budgetingCard = createDashboardCard("Budgeting", "Plan and track your monthly budget");
+        budgetingCard.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JButton setBudgetBtn = createCardButton("Set Budget");
+        setBudgetBtn.addActionListener(e -> {
+            BudgetManagementFrame frame = new BudgetManagementFrame(email);
+            TransitionUtils.fadeIn(frame);
+
+        });
+
+        budgetingCard.add(setBudgetBtn);
+        budgetingCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        contentPanel.add(budgetingCard);
+
+        // Card 3: Financial Goals
+        JPanel goalsCard = createDashboardCard("Financial Goals", "Set and achieve your financial targets");
+        goalsCard.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JButton setGoalBtn = createCardButton("Set Goal");
+        setGoalBtn.addActionListener(e -> {
+            FinancialGoalsFrame goalsFrame = new FinancialGoalsFrame(email);
+            TransitionUtils.fadeIn(goalsFrame);
+            // This should bring up a GUI to set goals
+        });
+
+        JButton viewGoalsBtn = createCardButton("View Goals");
+        viewGoalsBtn.addActionListener(e -> {
+            FinancialGoalsFrame.GoalDAO goalDAO = new FinancialGoalsFrame.GoalDAO(this.email);
+            List<Goal> activeGoals = goalDAO.getGoalsByStatus("active"); // Make sure this method exists in your FinancialGoalsFrame
+
+            String[] columns = {"ID", "Type", "Category", "Amount", "Deadline"};
+            Object[][] data = new Object[activeGoals.size()][5];
+            for (int i = 0; i < activeGoals.size(); i++) {
+                Goal g = activeGoals.get(i);
+                data[i][0] = g.getId();
+                data[i][1] = g.getType();
+                data[i][2] = g.getCategory();
+                data[i][3] = g.getAmount();
+                data[i][4] = g.getDeadline();
+            }
+
+            // 3. Create JTable and show in a dialog
+            JTable table = new JTable(data, columns);
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            JOptionPane.showMessageDialog(
+                    null, // or 'this' if inside a JFrame
+                    scrollPane,
+                    "Active Goals",
+                    JOptionPane.PLAIN_MESSAGE
+            );
+        });
+
+        goalsCard.add(setGoalBtn);
+        goalsCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        goalsCard.add(viewGoalsBtn);
+        contentPanel.add(goalsCard);
+
+        // Card 4: Account Settings
+        JPanel accountCard = createDashboardCard("Account", "Manage your account and reports");
+        accountCard.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JButton changePassBtn = createCardButton("Change Password");
+        changePassBtn.addActionListener(e -> {
+            Client client = new Client(email, true);
+            client.changePasswordGUI();
+        });
+
+
+        JButton generateReportBtn = createCardButton("Monthly Report");
+        generateReportBtn.addActionListener(e -> generateMonthlyReport());
+
+        JButton logoutBtn = createCardButton("Logout");
+        logoutBtn.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to logout?",
+                    "Logout Confirmation",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                Databasehelper.logActivity(email, "LOGOUT", "User logged out.");
+                new LoginFrame("client");
+                SwingUtilities.getWindowAncestor(logoutBtn).dispose();
+            }
+        });
+
+
+        accountCard.add(changePassBtn);
+        accountCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        accountCard.add(generateReportBtn);
+        accountCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        accountCard.add(logoutBtn);
+        contentPanel.add(accountCard);
+
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Footer with date and time
+        JLabel footerLabel = new JLabel("Today is: " + getCurrentDateTime(), SwingConstants.CENTER);
+        footerLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        footerLabel.setForeground(new Color(70, 70, 70));
+        mainPanel.add(footerLabel, BorderLayout.SOUTH);
+
+        // Drag functionality for undecorated window
+        addDragFunctionality();
+
+        setContentPane(mainPanel);
+        setVisible(true);
+    }
+
+    private String getCurrentDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy - hh:mm a", Locale.ENGLISH);
+        return dateFormat.format(new Date());
+    }
+
+    private void showBudgetReport() {
+        // Dummy budget data for June 2024
+        Object[][] data = {
+                {"Food", "PKR 15,000", "PKR 12,450", "83%"},
+                {"Utilities", "PKR 10,000", "PKR 8,200", "82%"},
+                {"Transport", "PKR 8,000", "PKR 6,750", "84%"},
+                {"Entertainment", "PKR 5,000", "PKR 4,100", "82%"},
+                {"Savings", "PKR 20,000", "PKR 18,500", "93%"}
+        };
+
+        String[] columns = {"Category", "Budget", "Spent", "Utilization"};
+
+        JTable table = new JTable(data, columns);
+        table.setFont(PAKISTANI_FONT);
+        table.setRowHeight(25);
+        table.getTableHeader().setFont(PAKISTANI_FONT.deriveFont(Font.BOLD));
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("June 2024 Budget Report"));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Budget Report", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void showGoals() {
+        // Dummy goals data
+        Object[][] data = {
+                {"Emergency Fund", "PKR 100,000", "PKR 65,000", "65%", "Dec 2024"},
+                {"Hajj Savings", "PKR 500,000", "PKR 120,000", "24%", "Dec 2025"},
+                {"Car Purchase", "PKR 1,200,000", "PKR 300,000", "25%", "Jun 2025"}
+        };
+
+        String[] columns = {"Goal", "Target", "Saved", "Progress", "Deadline"};
+
+        JTable table = new JTable(data, columns);
+        table.setFont(PAKISTANI_FONT);
+        table.setRowHeight(25);
+        table.getTableHeader().setFont(PAKISTANI_FONT.deriveFont(Font.BOLD));
+
+        // Set custom renderer for progress column
+        table.getColumnModel().getColumn(3).setCellRenderer(new ProgressRenderer());
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Current Financial Goals"));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Financial Goals", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private static class ProgressRenderer extends DefaultTableCellRenderer {
+        private final JProgressBar progressBar = new JProgressBar(0, 100);
+
+        public ProgressRenderer() {
+            super();
+            progressBar.setStringPainted(true);
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (value instanceof String) {
+                String progressStr = (String) value;
+                int progress = Integer.parseInt(progressStr.replace("%", ""));
+                progressBar.setValue(progress);
+                progressBar.setString(progressStr);
+
+                if (progress > 70) {
+                    progressBar.setForeground(Color.GREEN);
+                } else if (progress > 40) {
+                    progressBar.setForeground(Color.ORANGE);
+                } else {
+                    progressBar.setForeground(Color.RED);
+                }
+            }
+            return progressBar;
+        }
+    }
+
+    private void generateMonthlyReport() {
+        String[] months = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        JComboBox<String> monthCombo = new JComboBox<>(months);
+        Calendar cal = Calendar.getInstance();
+        monthCombo.setSelectedIndex(cal.get(Calendar.MONTH));
+
+        int currentYear = cal.get(Calendar.YEAR);
+        JSpinner yearSpinner = new JSpinner(new SpinnerNumberModel(currentYear, 2020, 2030, 1));
+        yearSpinner.setEditor(new JSpinner.NumberEditor(yearSpinner, "0"));
+
+        JPanel picker = new JPanel(new GridLayout(2, 2, 10, 10));
+        picker.add(new JLabel("Month:"));
+        picker.add(monthCombo);
+        picker.add(new JLabel("Year:"));
+        picker.add(yearSpinner);
+
+        int result = JOptionPane.showConfirmDialog(this, picker,
+                "Select Report Month", JOptionPane.OK_CANCEL_OPTION);
+        if (result != JOptionPane.OK_OPTION) return;
+
+        int month = monthCombo.getSelectedIndex() + 1;
+        int year = (Integer) yearSpinner.getValue();
+
+        try {
+            File tempFile = File.createTempFile("pakfinance_report_", ".html");
+            tempFile.deleteOnExit();
+
+            String htmlContent = generateHtmlReport(email, month, year);
+
+            try (FileWriter writer = new FileWriter(tempFile)) {
+                writer.write(htmlContent);
+            }
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(tempFile.toURI());
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Report generated at: " + tempFile.getAbsolutePath(),
+                        "Report Generated", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Error generating report: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String generateHtmlReport(String userEmail, int month, int year) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
+        String currentDate = dateFormat.format(new Date());
+
+        String monthStr = String.format("%02d", month);
+        String datePattern = year + "-" + monthStr + "%";
+
+        NumberFormat pkrFormat = NumberFormat.getNumberInstance(Locale.US);
+
+        double totalIncome = 0, totalExpense = 0;
+
+        String sqlIncome = "SELECT COALESCE(SUM(amount),0) FROM amount WHERE user_email = ? AND type = 'income' AND date LIKE ?";
+        try (Connection conn = Databasehelper.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlIncome)) {
+            pstmt.setString(1, userEmail);
+            pstmt.setString(2, datePattern);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) totalIncome = rs.getDouble(1);
+        } catch (SQLException e) {
+            System.out.println("Error fetching income: " + e.getMessage());
+        }
+
+        String sqlExpense = "SELECT COALESCE(SUM(amount),0) FROM amount WHERE user_email = ? AND type = 'expense' AND date LIKE ?";
+        try (Connection conn = Databasehelper.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlExpense)) {
+            pstmt.setString(1, userEmail);
+            pstmt.setString(2, datePattern);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) totalExpense = rs.getDouble(1);
+        } catch (SQLException e) {
+            System.out.println("Error fetching expense: " + e.getMessage());
+        }
+
+        double savings = totalIncome - totalExpense;
+
+        double budgetUtilization = 0;
+        String sqlBudget = "SELECT COALESCE(SUM(amount),0), COALESCE(SUM(remaining_budget),0) FROM budget WHERE user_email = ?";
+        try (Connection conn = Databasehelper.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBudget)) {
+            pstmt.setString(1, userEmail);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                double totalBudget = rs.getDouble(1);
+                double totalRemaining = rs.getDouble(2);
+                if (totalBudget > 0) {
+                    budgetUtilization = ((totalBudget - totalRemaining) / totalBudget) * 100;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching budget: " + e.getMessage());
+        }
+
+        StringBuilder rows = new StringBuilder();
+        String sqlTxns = "SELECT date, amount, type FROM amount WHERE user_email = ? AND date LIKE ? ORDER BY date DESC";
+        try (Connection conn = Databasehelper.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sqlTxns)) {
+            pstmt.setString(1, userEmail);
+            pstmt.setString(2, datePattern);
+            ResultSet rs = pstmt.executeQuery();
+            int count = 0;
+            while (rs.next() && count < 50) {
+                String txnDate = rs.getString("date");
+                if (txnDate != null && txnDate.length() >= 10) txnDate = txnDate.substring(0, 10);
+                double amt = rs.getDouble("amount");
+                String type = rs.getString("type");
+                String sign = type.equalsIgnoreCase("income") ? "" : "-";
+                rows.append(String.format(
+                        "<tr><td>%s</td><td>%s</td><td>%s</td><td style='text-align:right'>PKR %s</td></tr>",
+                        txnDate, type, type, sign + pkrFormat.format(amt)
+                ));
+                count++;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching transactions: " + e.getMessage());
+        }
+
+        if (rows.length() == 0) {
+            rows.append("<tr><td colspan='4' style='text-align:center'>No transactions for this period</td></tr>");
+        }
+
+        String[] monthNames = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        String monthName = monthNames[month - 1];
+
+        return String.format(
+                "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<title>Monthly Financial Report</title>" +
+                "<style>" +
+                "body { font-family: Geist, Arial, sans-serif; margin: 20px; background: #f8f7fa; color: #3d3c4f; }" +
+                "h1 { color: #8a79ab; text-align: center; }" +
+                "h2 { color: #8a79ab; border-bottom: 2px solid #cec9d9; padding-bottom: 8px; }" +
+                "table { width: 100%%; border-collapse: collapse; margin-bottom: 20px; background: #ffffff; border-radius: 8px; overflow: hidden; }" +
+                "th { background-color: #8a79ab; color: #f8f7fa; text-align: left; padding: 12px; }" +
+                "td { padding: 10px; border-bottom: 1px solid #eae7f0; }" +
+                "tr:nth-child(even) { background-color: #f1eff5; }" +
+                ".summary { margin-bottom: 30px; display: flex; gap: 16px; flex-wrap: wrap; }" +
+                ".summary-card { background: #ffffff; border-radius: 8px; padding: 20px; flex: 1; min-width: 180px; box-shadow: 1px 2px 5px rgba(0,0,0,0.06); }" +
+                ".summary-label { font-size: 14px; color: #6b6880; margin-bottom: 4px; display: block; }" +
+                ".summary-value { font-size: 24px; font-weight: bold; }" +
+                ".positive { color: #77b8a1; }" +
+                ".negative { color: #d95c5c; }" +
+                ".neutral { color: #8a79ab; }" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<h1>Financial Report - %s %s</h1>" +
+                "<p style='text-align: center; color: #6b6880;'>Generated on %s</p>" +
+                "<div class='summary'>" +
+                "<div class='summary-card'><span class='summary-label'>Total Income</span><div class='summary-value positive'>PKR %s</div></div>" +
+                "<div class='summary-card'><span class='summary-label'>Total Expenses</span><div class='summary-value negative'>PKR %s</div></div>" +
+                "<div class='summary-card'><span class='summary-label'>Net Savings</span><div class='summary-value %s'>PKR %s</div></div>" +
+                "<div class='summary-card'><span class='summary-label'>Budget Utilization</span><div class='summary-value neutral'>%.0f%%</div></div>" +
+                "</div>" +
+                "<h2>Transactions</h2>" +
+                "<table>" +
+                "<tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr>" +
+                "%s" +
+                "</table>" +
+                "</body>" +
+                "</html>",
+                monthName, year, currentDate,
+                pkrFormat.format(totalIncome),
+                pkrFormat.format(totalExpense),
+                savings >= 0 ? "positive" : "negative",
+                pkrFormat.format(Math.abs(savings)),
+                budgetUtilization,
+                rows.toString()
+        );
+    }
+
+    private JPanel createDashboardCard(String title, String description) {
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2d.setColor(CARD_COLOR);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
+                g2d.setColor(PRIMARY_COLOR);
+                g2d.setStroke(new BasicStroke(2));
+                g2d.drawRoundRect(1, 1, getWidth()-3, getHeight()-3, 15, 15);
+            }
+        };
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setOpaque(false);
+        card.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setForeground(PRIMARY_COLOR);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel descLabel = new JLabel(description);
+        descLabel.setFont(PAKISTANI_FONT);
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        descLabel.setForeground(new Color(100, 100, 100));
+
+        card.add(titleLabel);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(descLabel);
+        card.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        return card;
+    }
+
+    private JButton createCardButton(String text) {
+        JButton button = new JButton(text) {
+            private boolean isHovered = false;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2d.setColor(isHovered ? new Color(230, 240, 230) : Color.WHITE);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                g2d.setColor(isHovered ? PRIMARY_COLOR : new Color(200, 220, 200));
+                g2d.setStroke(new BasicStroke(1.5f));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+
+                g2d.setColor(PRIMARY_COLOR);
+                g2d.setFont(PAKISTANI_FONT.deriveFont(Font.BOLD, 14));
+
+                FontMetrics fm = g2d.getFontMetrics();
+                Rectangle2D r = fm.getStringBounds(getText(), g2d);
+                int x = (getWidth() - (int) r.getWidth()) / 2;
+                int y = (getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+                g2d.drawString(getText(), x, y);
+            }
+
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        isHovered = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        isHovered = false;
+                        repaint();
+                    }
+                });
+            }
+        };
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(180, 40));
+        button.setMaximumSize(new Dimension(180, 40));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMargin(new Insets(5, 10, 5, 10));
+        return button;
+    }
+
+    private JButton createIconButton(String text) {
+        JButton button = new JButton(text) {
+            private boolean isHovered = false;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (isHovered) {
+                    g2d.setColor(new Color(220, 50, 50));
+                    g2d.fillOval(0, 0, getWidth(), getHeight());
+                }
+
+                g2d.setColor(isHovered ? Color.WHITE : new Color(150, 150, 150));
+                g2d.setFont(PAKISTANI_FONT.deriveFont(Font.BOLD, 12));
+                FontMetrics fm = g2d.getFontMetrics();
+                Rectangle2D r = fm.getStringBounds(getText(), g2d);
+                int x = (getWidth() - (int) r.getWidth()) / 2;
+                int y = (getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+                g2d.drawString(getText(), x, y);
+            }
+
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        isHovered = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        isHovered = false;
+                        repaint();
+                    }
+                });
+            }
+        };
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(30, 30));
+        return button;
+    }
+
+    private void addDragFunctionality() {
+        MouseAdapter ma = new MouseAdapter() {
+            private Point initLocation;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                initLocation = e.getPoint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+                int xMoved = e.getX() - initLocation.x;
+                int yMoved = e.getY() - initLocation.y;
+                setLocation(thisX + xMoved, thisY + yMoved);
+            }
+        };
+        addMouseListener(ma);
+        addMouseMotionListener(ma);
+    }
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        SwingUtilities.invokeLater(() -> new ClientDashboardFrame("salman@gmail.com").setVisible(true));
+    }
+}

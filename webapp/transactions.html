@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions - Finance Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<svg class="hidden" aria-hidden="true">
+  <defs>
+    <filter id="blurMe">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
+
+<div class="gradient-bg" style="min-height: 100vh;">
+  <div class="gradients-container" style="opacity: 0.3;">
+    <div class="gradient-orb first"></div>
+    <div class="gradient-orb second"></div>
+    <div class="gradient-orb fourth"></div>
+    <div class="gradient-orb fifth"></div>
+    <div class="interactive-orb"></div>
+  </div>
+
+  <div class="gradient-content">
+    <nav class="nav" style="background: transparent; border-bottom-color: rgba(255,255,255,0.1);">
+      <div class="nav-inner">
+        <div class="nav-brand">Finance Tracker</div>
+        <div class="nav-pill-container" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <a href="/dashboard.html" class="nav-pill-item" style="color: var(--primary-foreground);">Dashboard</a>
+          <a href="/transactions.html" class="nav-pill-item active" style="color: var(--primary-foreground);">Transactions</a>
+          <a href="/budgets.html" class="nav-pill-item" style="color: var(--primary-foreground);">Budgets</a>
+          <a href="/goals.html" class="nav-pill-item" style="color: var(--primary-foreground);">Goals</a>
+          <a href="/report.html" class="nav-pill-item" style="color: var(--primary-foreground);">Report</a>
+          <div class="nav-pill-cursor"></div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleDark()" class="btn btn-ghost" style="font-size: 1rem; color: var(--primary-foreground);">&#9790;</button>
+          <button onclick="logout()" class="btn btn-destructive" style="padding: 0.5rem 1rem;">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-2xl font-bold" style="color: var(--primary-foreground);">Transactions</h1>
+          <p class="text-muted text-sm" style="color: var(--primary-foreground); opacity: 0.7;">View and manage your income &amp; expenses</p>
+        </div>
+        <button class="btn btn-primary" onclick="showAddTransactionModal()">+ Add Transaction</button>
+      </div>
+
+      <div class="card">
+        <div id="txnTableContainer">
+          <table>
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th></tr></thead>
+            <tbody id="txnBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/bg-animation.js"></script>
+<script src="/js/nav-cursor.js"></script>
+<script src="/js/transactions.js"></script>
+</body>
+</html>

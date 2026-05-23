@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ApiServer" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="cmdOptions" />
+          <option name="commandName" value="compile exec:java" />
+          <option name="moduleName" value="db" />
+          <option name="projectPath" value="$MODULE_DIR$" />
+          <option name="userProperties">
+            <map>
+              <entry key="exec.mainClass" value="org.database.api.ApiServer" />
+            </map>
+          </option>
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

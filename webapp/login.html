@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Finance Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<svg class="hidden" aria-hidden="true">
+  <defs>
+    <filter id="blurMe">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
+
+<div class="gradient-bg split-layout">
+  <div class="gradients-container">
+    <div class="gradient-orb first"></div>
+    <div class="gradient-orb second"></div>
+    <div class="gradient-orb third"></div>
+    <div class="gradient-orb fourth"></div>
+    <div class="gradient-orb fifth"></div>
+    <div class="interactive-orb"></div>
+  </div>
+
+  <div class="gradient-content split-form">
+    <div class="glass-form">
+      <div class="animate-element ade-100" style="margin-bottom: 1.5rem;">
+        <h1 class="text-3xl font-semibold" style="color: var(--primary-foreground);">Welcome</h1>
+        <p class="text-muted mt-2" style="color: var(--primary-foreground); opacity: 0.7;">Access your account and continue your journey</p>
+      </div>
+
+      <form id="authForm" onsubmit="return handleAuth(event)">
+        <div class="animate-element ade-200" style="margin-bottom: 1.25rem;">
+          <label class="label" for="email" style="color: var(--primary-foreground); opacity: 0.8;">Email Address</label>
+          <div class="glass-input-wrapper">
+            <input class="glass-input" type="email" id="email" placeholder="Enter your email address" required>
+          </div>
+        </div>
+
+        <div class="animate-element ade-300" style="margin-bottom: 1.25rem;">
+          <label class="label" for="password" style="color: var(--primary-foreground); opacity: 0.8;">Password</label>
+          <div class="glass-input-wrapper">
+            <div class="password-wrap">
+              <input type="password" id="password" placeholder="Enter your password" required>
+              <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password visibility">
+                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="animate-element ade-400" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem; margin-bottom: 1.25rem;">
+          <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+            <input type="checkbox" class="custom-checkbox">
+            <span style="color: var(--primary-foreground); opacity: 0.8;">Keep me signed in</span>
+          </label>
+          <a href="#" onclick="event.preventDefault(); showToast('Password reset coming soon', 'info')" class="link-accent" style="font-size: 0.875rem;">Reset password</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full animate-element ade-500" id="submitBtn" style="padding: 1rem; border-radius: 1rem; font-size: 1rem;">Sign In</button>
+      </form>
+
+      <div id="errorMsg" class="text-sm text-center mt-2" style="color: var(--destructive); display: none;"></div>
+
+
+
+      <p class="animate-element ade-800 text-center text-sm" style="margin-top: 1.5rem; color: var(--primary-foreground); opacity: 0.7;">
+        New here?
+        <a href="#" onclick="event.preventDefault(); switchToRegister()" class="link-accent">Create Account</a>
+      </p>
+    </div>
+  </div>
+
+    <div class="split-hero">
+    <div class="split-hero-image" style="background-image: linear-gradient(135deg, rgba(138,121,171,0.3), rgba(230,165,184,0.3)), url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80');"></div>
+  </div>
+</div>
+
+<button onclick="toggleDark()" class="btn btn-ghost theme-toggle-login" style="font-size: 1.25rem; color: var(--primary-foreground);">
+  <span id="themeIcon">&#9790;</span>
+</button>
+
+<script src="/js/api.js"></script>
+<script src="/js/bg-animation.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>
